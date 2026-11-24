@@ -9,107 +9,109 @@ La Figura~\ref{fig:cmp_final} illustra il Component Diagram definitivo di TEPO, 
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        scale=0.76, every node/.style={transform shape},
-        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.85cm},
-        solvercomp/.style={draw=orange!80, fill=orange!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.85cm},
-        aicomp/.style={draw=purple!80, fill=purple!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.85cm},
-        db/.style={draw=black!80, fill=yellow!15, rounded corners=4pt, thick, align=center, font=\scriptsize\bfseries, minimum height=1.0cm},
+        scale=0.88, every node/.style={transform shape},
+        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\small, minimum height=0.95cm},
+        solvercomp/.style={draw=orange!80, fill=orange!15, rounded corners=3pt, thick, align=center, font=\small, minimum height=0.95cm},
+        aicomp/.style={draw=purple!80, fill=purple!15, rounded corners=3pt, thick, align=center, font=\small, minimum height=0.95cm},
+        db/.style={draw=black!80, fill=yellow!15, rounded corners=4pt, thick, align=center, font=\small, minimum height=1.1cm},
         box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=6pt},
         arrow/.style={-Latex, thick, draw=black!80}
     ]
         % --- TIER 1: Presentation Tier (Client SPA) ---
-        \node[comp, text width=4.0cm] (views) at (-4.8, 0) {
-            9 Viste Operative\\
-            \tiny React 18 SPA Pages $\cdot$ Router
+        \node[comp, text width=4.5cm] (views) at (-5.0, 0) {
+            \textbf{9 Viste Operative}\\[2pt]
+            \footnotesize React 18 SPA Pages $\cdot$ Router
         };
-        \node[comp, text width=4.2cm] (shell) at (0, 0) {
-            Shell \& Componenti UI\\
-            \tiny SideNav $\cdot$ Palette $\cdot$ Theme $\cdot$ Modal
+        \node[comp, text width=4.8cm] (shell) at (0, 0) {
+            \textbf{Shell \& Componenti UI}\\[2pt]
+            \footnotesize SideNav $\cdot$ Palette $\cdot$ Theme $\cdot$ Modal
         };
-        \node[comp, text width=4.0cm] (store) at (4.8, 0) {
-            Client State Store\\
-            \tiny Session Storage $\cdot$ A/B Compare
+        \node[comp, text width=4.5cm] (store) at (5.0, 0) {
+            \textbf{Client State Store}\\[2pt]
+            \footnotesize Session Storage $\cdot$ A/B Compare
         };
-        \node[comp, text width=7.0cm] (apiclient) at (0, -1.25) {
-            ApiClient Tipizzato\\
-            \tiny Fetch API $\cdot$ Mappatura DTO REST $\cdot$ Gestione Errori RFC 7807
+        \node[comp, text width=9.0cm] (apiclient) at (0, -1.45) {
+            \textbf{ApiClient Tipizzato}\\[2pt]
+            \footnotesize Fetch API $\cdot$ Mappatura DTO REST $\cdot$ Gestione Errori RFC 7807
         };
         \begin{scope}[on background layer]
-            \node[box, fit=(views) (shell) (store) (apiclient), label=above:{\small\textbf{Presentation Tier: Client Web SPA (React 18 / Vite / TypeScript)}}] (box_client) {};
+            \node[box, fit=(views) (shell) (store) (apiclient), label=above:{\normalsize\textbf{Presentation Tier: Client Web SPA (React 18 / Vite / TypeScript)}}] (box_client) {};
         \end{scope}
 
         % --- TIER 2: Web Server & Gateway (Nginx) ---
-        \node[comp, fill=gray!15, text width=10.6cm] (nginx) at (0, -2.9) {
-            Nginx Reverse Proxy \& SPA Routing Engine (Port 80 / 443)\\
-            \tiny Compressione Gzip $\cdot$ Cache Asset Statici $\cdot$ Fallback index.html $\cdot$ Inoltro /api/*
+        \node[comp, fill=gray!15, text width=12.2cm] (nginx) at (0, -3.25) {
+            \textbf{Nginx Reverse Proxy \& SPA Routing Engine (Port 80 / 443)}\\[2pt]
+            \footnotesize Compressione Gzip $\cdot$ Cache Asset Statici $\cdot$ Fallback index.html $\cdot$ Inoltro /api/*
         };
 
         % --- TIER 3: Application Tier (Spring Boot) ---
-        \node[comp, text width=6.8cm] (ctrl_rest) at (-2.8, -5.35) {
-            REST Controllers Layer\\
-            \tiny ScenarioCtrl $\cdot$ SensitivityCtrl $\cdot$ ImportCtrl $\cdot$ BuildingCtrl $\cdot$ AiCtrl
+        \node[comp, text width=7.2cm] (ctrl_rest) at (-3.4, -5.75) {
+            \textbf{REST Controllers Layer}\\[2pt]
+            \footnotesize ScenarioCtrl $\cdot$ SensitivityCtrl $\cdot$ ImportCtrl $\cdot$ BuildingCtrl $\cdot$ AiCtrl
         };
-        \node[comp, text width=4.4cm] (exc_h) at (4.2, -5.35) {
-            Global Exception\\Handler (RFC 7807)\\
-            \tiny ErrorResponse DTO
+        \node[comp, text width=5.0cm] (exc_h) at (4.4, -5.75) {
+            \textbf{Global Exception Handler (RFC 7807)}\\[2pt]
+            \footnotesize ErrorResponse DTO
         };
-        \node[comp, text width=6.8cm] (app_serv) at (-2.8, -6.95) {
-            Application Services Layer\\
-            \tiny OptimizationService $\cdot$ SensitivityService $\cdot$ DemoDataLoader
+        \node[comp, text width=7.2cm] (app_serv) at (-3.4, -7.55) {
+            \textbf{Application Services Layer}\\[2pt]
+            \footnotesize OptimizationService $\cdot$ SensitivityService $\cdot$ DemoDataLoader
         };
-        \node[comp, text width=4.4cm] (repos) at (4.2, -6.95) {
-            Spring Data JPA Repos\\
-            \tiny BuildingRepo $\cdot$ OptionRepo $\cdot$ RunRepo
+        \node[comp, text width=5.0cm] (repos) at (4.4, -7.55) {
+            \textbf{Spring Data JPA Repos}\\[2pt]
+            \footnotesize BuildingRepo $\cdot$ OptionRepo $\cdot$ RunRepo
         };
         \begin{scope}[on background layer]
-            \node[box, fit=(ctrl_rest) (exc_h) (app_serv) (repos), label={[xshift=2.0cm]above:{\small\textbf{Application Tier: Spring Boot 3.3.4 (Java 21 LTS)}}}] (box_backend) {};
+            \node[box, fit=(ctrl_rest) (exc_h) (app_serv) (repos), label={[xshift=1.8cm]above:{\normalsize\textbf{Application Tier: Spring Boot 3.3.4 (Java 21 LTS)}}}] (box_backend) {};
         \end{scope}
 
         % --- TIER 4: Engines & Subsystems (Symmetric side-by-side) ---
         % Optimization Engine (Left)
-        \node[solvercomp, text width=6.5cm] (solver_core) at (-3.7, -9.4) {
-            Google OR-Tools CP-SAT\\
-            \tiny Motore C++ Nativo via JNI $\cdot$ Tie-Break Lessicografico a 4 Passi
+        \node[solvercomp, text width=6.6cm] (solver_core) at (-3.8, -10.4) {
+            \textbf{Google OR-Tools CP-SAT}\\[2pt]
+            \footnotesize Motore C++ Nativo via JNI $\cdot$ Tie-Break a 4 Passi
         };
-        \node[solvercomp, text width=6.5cm] (hasher_core) at (-3.7, -11.0) {
-            Problem Hasher \& Explanation Engine\\
-            \tiny Hash Canonico SHA-256 $\cdot$ Analisi Barriere Locali Vincoli
+        \node[solvercomp, text width=6.6cm] (hasher_core) at (-3.8, -12.9) {
+            \textbf{Problem Hasher \& Explanation Engine}\\[2pt]
+            \footnotesize Hash Canonico SHA-256 $\cdot$ Analisi Barriere Locali
         };
         \begin{scope}[on background layer]
-            \node[box, draw=orange!60, fill=orange!3, fit=(solver_core) (hasher_core), label=above:{\scriptsize\textbf{Optimization \& Explanation Subsystem}}] (box_solver) {};
+            \node[box, draw=orange!60, fill=orange!3, fit=(solver_core) (hasher_core)] (box_solver) {};
         \end{scope}
+        \node[font=\small\bfseries, text=orange!90, anchor=south west] at (box_solver.north west) {Optimization \& Explanation Subsystem};
 
         % AI Assistant Subsystem (Right)
-        \node[aicomp, text width=6.5cm] (ai_llm) at (3.7, -9.4) {
-            LlmAiAssistant (Provider Cloud REST)\\
-            \tiny OpenAI/Gemini Provider $\cdot$ Temperature 0.1 $\cdot$ JSON Schema
+        \node[aicomp, text width=6.6cm] (ai_llm) at (3.8, -10.4) {
+            \textbf{LlmAiAssistant (Provider Cloud REST)}\\[2pt]
+            \footnotesize OpenAI/Gemini Provider $\cdot$ Temperature 0.1 $\cdot$ JSON Schema
         };
-        \node[aicomp, text width=6.5cm] (ai_rule) at (3.7, -11.0) {
-            RuleBasedAiAssistant (Deterministic Fallback)\\
-            \tiny Regole Deterministiche Locali $\cdot$ Zero Chiamate Esterne
+        \node[aicomp, text width=6.6cm] (ai_rule) at (3.8, -12.9) {
+            \textbf{RuleBasedAiAssistant (Deterministic Fallback)}\\[2pt]
+            \footnotesize Regole Deterministiche Locali $\cdot$ Zero Chiamate Esterne
         };
         \begin{scope}[on background layer]
-            \node[box, draw=purple!60, fill=purple!3, fit=(ai_llm) (ai_rule), label=above:{\scriptsize\textbf{AI Assistant Subsystem (Architettura Ibrida)}}] (box_ai) {};
+            \node[box, draw=purple!60, fill=purple!3, fit=(ai_llm) (ai_rule)] (box_ai) {};
         \end{scope}
+        \node[font=\small\bfseries, text=purple!90, anchor=south east] at (box_ai.north east) {AI Assistant Subsystem (Architettura Ibrida)};
 
         % --- TIER 5: Persistence Tier (PostgreSQL) ---
-        \node[db, text width=13.0cm] (db_final) at (0, -12.8) {
-            PostgreSQL 16 Relational Database Engine\\
-            \tiny Migrazioni Flyway (V1, V2) $\cdot$ Integrità Referenziale FK $\cdot$ Indici B-Tree $\cdot$ Transazioni ACID
+        \node[db, text width=14.8cm] (db_final) at (0, -15.1) {
+            \textbf{PostgreSQL 16 Relational Database Engine}\\[2pt]
+            \footnotesize Migrazioni Flyway (V1, V2) $\cdot$ Integrità Referenziale FK $\cdot$ Indici B-Tree $\cdot$ Transazioni ACID
         };
 
         % --- CONNECTORS ---
-        \draw[arrow] (apiclient) -- node[right, font=\tiny] {HTTPS} (nginx);
-        \draw[arrow] (nginx.south -| ctrl_rest.north) -- node[left=2pt, font=\tiny] {Proxy pass :8080} (ctrl_rest.north);
+        \draw[arrow] (apiclient) -- node[right=2pt, font=\small\bfseries] {HTTPS} (nginx);
+        \draw[arrow] (nginx.south -| ctrl_rest.north) -- node[left=2pt, font=\small\bfseries] {Proxy pass :8080} (ctrl_rest.north);
         \draw[arrow] (ctrl_rest) -- (app_serv);
         \draw[arrow] (ctrl_rest) -- (exc_h);
         \draw[arrow] (app_serv) -- (repos);
-        \draw[arrow] (app_serv.south) -- ++(0, -0.4) -| (solver_core.north);
+        \draw[arrow] (app_serv.south) -- ++(0, -0.55) -| (solver_core.north);
         \draw[arrow] (solver_core) -- (hasher_core);
-        \draw[arrow] (app_serv.south) -- ++(0, -0.5) -| node[above, pos=0.25, font=\tiny] {AiRoute} (ai_llm.north);
-        \draw[arrow, dashed] (ai_llm) -- node[right, font=\tiny] {Failover} (ai_rule);
-        \draw[arrow] (repos.east) -- ++(1.4cm, 0) |- node[right, near start, font=\tiny] {JDBC HikariCP} (db_final.east);
-        \draw[arrow] (hasher_core.south) -- node[left, font=\tiny] {Audit Runs} (hasher_core.south |- db_final.north);
+        \draw[arrow] (app_serv.south) -- ++(0, -1.0) coordinate (p_ai) -- (p_ai -| 0.0, 0) |- node[above=2pt, pos=0.7, font=\small\bfseries, text=tepoblue!90] {AiRoute} (ai_llm.west);
+        \draw[arrow, dashed] (ai_llm) -- node[right=4pt, midway, font=\small\bfseries, text=purple!90] {Failover} (ai_rule);
+        \draw[arrow, thick] (repos.east) -- ++(0.7cm, 0) coordinate (p_jdbc) -- node[right=3pt, pos=0.45, font=\small\bfseries, align=left] {JDBC Pool\\HikariCP} (p_jdbc |- db_final.north);
+        \draw[arrow] (hasher_core.south) -- node[left=2pt, font=\small\bfseries] {Audit Runs} (hasher_core.south |- db_final.north);
     \end{tikzpicture}
     \caption{Component Diagram finale del sistema TEPO.}
     \label{fig:cmp_final}

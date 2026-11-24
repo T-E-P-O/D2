@@ -170,10 +170,12 @@ Per agevolare il collaudo da parte della commissione d'esame e dei tecnici comun
 docker compose up --build
 \end{lstlisting}
 L'orchestrazione avvia automaticamente tre container interconnessi:
-\begin{itemize}[leftmargin=1.4em, itemsep=0.15em]
+\begin{itemize}[leftmargin=1.4em, itemsep=0.25em]
     \item \textbf{\texttt{tepo-db}}: Database PostgreSQL 16 su porta \texttt{5432}, inizializzato con volume persistente e schema Flyway;
-    \item \textbf{\texttt{tepo-backend}}: Backend Spring Boot su porta \texttt{8080}, pronto all'indirizzo \url{http://localhost:8080};
-    \item \textbf{\texttt{tepo-frontend}}: Web server Nginx su porta \texttt{5173}, accessibile su \url{http://localhost:5173}.
+    \item \textbf{\texttt{tepo-backend}}: Backend Spring Boot su porta \texttt{8080}, pronto all'indirizzo:\\
+    \mbox{\url{http://localhost:8080}};
+    \item \textbf{\texttt{tepo-frontend}}: Web server Nginx su porta \texttt{5173}, accessibile all'indirizzo:\\
+    \mbox{\url{http://localhost:5173}}.
 \end{itemize}
 
 \subsubsection{2. Esecuzione in Ambiente di Sviluppo Locale (Hot-Reload)}

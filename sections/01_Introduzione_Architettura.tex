@@ -115,21 +115,23 @@ La Tabella~\ref{tab:stack_tecnologico} riassume la configurazione analitica dei 
 \begin{table}[H]
 \centering
 \small
-\begin{tabularx}{\textwidth}{@{} >{\RaggedRight\arraybackslash\bfseries}p{2.6cm} >{\RaggedRight\arraybackslash}p{3.8cm} >{\RaggedRight\arraybackslash}X @{}}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\textwidth}{@{} >{\RaggedRight\arraybackslash\bfseries}p{3.6cm} >{\RaggedRight\arraybackslash}p{4.0cm} >{\RaggedRight\arraybackslash}X @{}}
 \toprule
 \textbf{Ambito} & \textbf{Tecnologia Selezionata} & \textbf{Motivazione e Ruolo Architetturale} \\
 \midrule
-\textbf{Linguaggio Backend} & Java 21 LTS & Tipizzazione statica forte, Virtual Threads (Project Loom) per alta scalabilità I/O, robustezza del runtime enterprise. \\
-\textbf{Framework Backend} & Spring Boot 3.3.4 & Inversion of Control, configurazione modulare, validazione dichiarativa dei DTO, integrazione nativa con OpenAPI/Swagger. \\
-\textbf{Solver Matematico} & Google OR-Tools CP-SAT 9.11 & Risoluzione esatta di problemi di Constraint Programming e Integer Programming; supporto nativo a vincoli logici booleani con implicazione; performance ottimali garantite dal core C++ compilato e interfacciato tramite Java Native Interface (JNI). \\
-\textbf{Database Relazionale} & PostgreSQL 16 & Motore open source robusto, supporto per indici B-Tree avanzati, gestione delle chiavi esterne per garantire l'integrità referenziale, transazioni serializzabili. \\
-\textbf{Database Migration} & Flyway 10 & Versionamento deterministico dello schema relazionale (\path{V1__init.sql}, \allowbreak\path{V2__optimization_runs.sql}); allineamento automatico tra ambienti di test, locale e cloud. \\
-\textbf{Linguaggio Frontend} & TypeScript 5.5 & Tipizzazione statica end-to-end allineata ai contratti DTO del backend, prevenzione di errori di runtime e manutenibilità. \\
-\textbf{Libreria UI Frontend} & React 18 & Modello a componenti dichiarativo, gestione dello stato reattivo e concorrente, facilità di composizione delle viste decisionali. \\
-\textbf{Tooling \& Bundler} & Vite 5 & Server di sviluppo ultra-rapido (ESM nativo), ottimizzazione del bundle di produzione, integrazione nativa con suite Vitest. \\
-\textbf{Cartografia \& GIS} & Leaflet 1.9 & Rendering di mappe interattive georeferenziate, clustering degli edifici di Trento, visualizzazione ad alto contrasto con supporto dark mode senza dipendenze proprietarie. \\
-\textbf{Containerizzazione} & Docker \& Docker Compose & Multi-stage build per la minimizzazione delle immagini, isolamento completo delle dipendenze, parità garantita tra sviluppo locale e cloud. \\
-\textbf{Piattaforma Cloud} & Render (PaaS) & Hosting nativo di container Docker, gestione integrata di istanze PostgreSQL con TLS, Infrastructure-as-Code via \texttt{render.yaml}. \\
+Linguaggio Backend & Java 21 LTS & Tipizzazione statica forte, Virtual Threads (Project Loom) per alta scalabilità I/O, robustezza del runtime enterprise. \\
+Framework Backend & Spring Boot 3.3.4 & Inversion of Control, configurazione modulare, validazione dichiarativa dei DTO, integrazione nativa con OpenAPI/Swagger. \\
+Solver Matematico & Google OR-Tools CP-SAT 9.11 & Risoluzione esatta di problemi di Constraint Programming e Integer Programming; supporto nativo a vincoli logici booleani con implicazione; performance ottimali garantite dal core C++ compilato e interfacciato tramite Java Native Interface (JNI). \\
+Database Relazionale & PostgreSQL 16 & Motore open source robusto, supporto per indici B-Tree avanzati, gestione delle chiavi esterne per garantire l'integrità referenziale, transazioni serializzabili. \\
+Database Migration & Flyway 10 & Versionamento deterministico dello schema relazionale (\path{V1__init.sql}, \allowbreak\mbox{\texttt{V2\_\_optimization\_runs.sql}}); allineamento automatico tra ambienti di test, locale e cloud. \\
+Linguaggio Frontend & TypeScript 5.5 & Tipizzazione statica end-to-end allineata ai contratti DTO del backend, prevenzione di errori di runtime e manutenibilità. \\
+Libreria UI Frontend & React 18 & Modello a componenti dichiarativo, gestione dello stato reattivo e concorrente, facilità di composizione delle viste decisionali. \\
+Tooling \& Bundler & Vite 5 & Server di sviluppo ultra-rapido (ESM nativo), ottimizzazione del bundle di produzione, integrazione nativa con suite Vitest. \\
+Cartografia \& GIS & Leaflet 1.9 & Rendering di mappe interattive georeferenziate, clustering degli edifici di Trento, visualizzazione ad alto contrasto con supporto dark mode senza dipendenze proprietarie. \\
+Containerizzazione & Docker \& Docker Compose & Multi-stage build per la minimizzazione delle immagini, isolamento completo delle dipendenze, parità garantita tra sviluppo locale e cloud. \\
+Piattaforma Cloud & Render (PaaS) & Hosting nativo di container Docker, gestione integrata di istanze PostgreSQL con TLS, Infrastructure-as-Code via \texttt{render.yaml}. \\
 \bottomrule
 \end{tabularx}
 \caption{Quadro di sintesi dello stack tecnologico di TEPO.}

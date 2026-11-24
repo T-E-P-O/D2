@@ -44,7 +44,7 @@ La Figura~\ref{fig:roadmap_sprint} riassume la traiettoria temporale e i deliver
         \node[titlebox] at (s2.north) {Sprint 2: Algoritmo e Solutore};
 
         % Row 2: Sprint 3 and Sprint 4
-        \node[sprintbox] (s3) at (0, -4.6cm) {
+        \node[sprintbox] (s3) at (0, -4.9cm) {
             \\[0.35cm]
             \textbf{Focus:} Analisi Comparativa e Dati Esterni\\
             $\bullet$ US-06: Confronto Scenari What-If (Slot A/B)\\
@@ -55,7 +55,7 @@ La Figura~\ref{fig:roadmap_sprint} riassume la traiettoria temporale e i deliver
         };
         \node[titlebox] at (s3.north) {Sprint 3: What-If e Sensibilità};
 
-        \node[sprintbox] (s4) at (7.8cm, -4.6cm) {
+        \node[sprintbox] (s4) at (7.8cm, -4.9cm) {
             \\[0.35cm]
             \textbf{Focus:} Assistente AI e Rilascio in Esercizio\\
             $\bullet$ US-11: Assistente AI Human-in-the-Loop\\
@@ -69,7 +69,10 @@ La Figura~\ref{fig:roadmap_sprint} riassume la traiettoria temporale e i deliver
 
         % Flow arrows connecting the 4 sprints
         \draw[arrow] (s1.east) -- (s2.west);
-        \draw[arrow] ([xshift=-2.6cm]s2.south) -- ++(0, -0.5cm) -| node[above, pos=0.3, font=\scriptsize\bfseries] {Incremento} ([xshift=1.2cm]s3.north);
+        \draw[arrow] ([xshift=-1.5cm]s2.south) -- ++(0, -0.45cm)
+            -- node[pos=0.30, fill=white, draw=tepoblue!70, rounded corners=2pt, inner sep=2.5pt, font=\scriptsize\bfseries, text=tepoblue!90] {Incremento}
+               ([xshift=1.5cm]s3.north |- 0, -2.6cm)
+            -- ([xshift=1.5cm]s3.north);
         \draw[arrow] (s3.east) -- (s4.west);
     \end{tikzpicture}
     \caption{Roadmap evolutiva dei quattro sprint di sviluppo di TEPO.}
