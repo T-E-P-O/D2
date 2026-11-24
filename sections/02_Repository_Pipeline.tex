@@ -1,0 +1,183 @@
+\section{Organizzazione del Repository, Ambienti e Pipeline CI/CD}
+\label{sec:repository_pipeline}
+
+\subsection{Struttura del Repository e Separazione delle Responsabilità}
+Il codice sorgente di TEPO è organizzato secondo un'architettura a monorepo multi-modulo, consultabile pubblicamente sul repository istituzionale di progetto:
+\begin{center}
+    \url{https://github.com/T-E-P-O/TEPO}
+\end{center}
+Tale configurazione garantisce la sincronizzazione atomica tra il codice del backend, il client web, gli script di automazione e le configurazioni di deployment, prevenendo disallineamenti di versione tra i contratti API e l'interfaccia utente.
+
+L'albero del repository è articolato come illustrato di seguito:
+
+\begin{lstlisting}[caption={Albero della struttura del repository monorepo di TEPO.}, label={lst:repo_tree}]
+TEPO/
+|-- .github/
+|   \-- workflows/
+|       \-- ci.yml                 # Pipeline di CI/CD (GitHub Actions)
+|-- backend/                       # Applicazione Spring Boot (Java 21 LTS)
+|   |-- src/
+|   |   |-- main/
+|   |   |   |-- java/it/unitn/tepo/
+|   |   |   |   |-- ai/            # Assistente AI e fallback a regole
+|   |   |   |   |-- api/           # Controller REST e gestione eccezioni
+|   |   |   |   |-- application/   # Servizi applicativi e repository JPA
+|   |   |   |   |-- configuration/ # Configurazione Spring, CORS, SPA forward
+|   |   |   |   |-- domain/        # Entita di dominio ed enumerazioni
+|   |   |   |   \-- optimization/  # Solver OR-Tools, spiegazioni, hasher
+|   |   |   \-- resources/
+|   |   |       |-- application.yaml  # Configurazione profili e timeout
+|   |   |       \-- db/migration/     # Migrazioni Flyway (V1, V2)
+|   |   \-- test/java/it/unitn/tepo/  # Suite test backend (119 test verdi)
+|   |-- Dockerfile                 # Immagine multi-stage backend (Maven + JRE 21)
+|   \-- pom.xml                    # Gestione dipendenze Maven e OR-Tools native
+|-- frontend/                      # Client Web SPA (React 18 + TypeScript + Vite)
+|   |-- src/
+|   |   |-- components/            # Shell applicativa, navigazione, grafici SVG
+|   |   |-- hooks/                 # Custom React hooks (async, session, theme)
+|   |   |-- lib/                   # Funzioni pure di formattazione e derivazione
+|   |   |-- pages/                 # 9 Viste operative (Dashboard, Mappa, ecc.)
+|   |   |-- services/              # Client API REST tipizzato e store sessione
+|   |   |-- styles/                # Token grafici del design system civico
+|   |   |-- test/                  # Suite test frontend Vitest (69 test verdi)
+|   |   |-- main.tsx               # Entry point e routing applicativo SPA
+|   |   \-- types.ts               # Contratti TypeScript condivisi
+|   |-- Dockerfile                 # Immagine multi-stage frontend (Vite + Nginx)
+|   |-- nginx.conf                 # Configurazione reverse proxy e fallback SPA
+|   |-- package.json               # Dipendenze npm e configurazione script
+|   \-- vite.config.ts             # Configurazione Vite e test runner Vitest
+|-- icon/                          # Loghi vettoriali e asset grafici dell'app
+|-- scripts/
+|   |-- test-backend.ps1           # Script collaudo backend via Docker (Windows)
+|   \-- test-backend.sh            # Script collaudo backend via Docker (Linux/macOS)
+|-- .env.example                   # Modello esplicativo delle variabili d'ambiente
+|-- docker-compose.yaml            # Orchestrazione locale (db + backend + frontend)
+|-- Dockerfile                     # Immagine unificata multi-servizio per cloud
+|-- ISTRUZIONI-AVVIO.md            # Manuale operativo di esecuzione e collaudo
+|-- README.md                      # Documentazione tecnica generale e badge di CI
+\-- render.yaml                    # Blueprint Infrastructure-as-Code per Render
+\end{lstlisting}
+
+\subsection{Strategia di Branching e Convenzioni di Versione}
+Per garantire l'integrità del ramo principale di produzione (`main`) e favorire lo sviluppo concorrente e tracciabile, il team ha adottato una strategia di branching basata su \emph{Feature Branching} con revisione formale tramite Pull Request (PR) e verifica automatica in CI.
+
+\subsubsection{Tassonomia dei Rami}
+La denominazione dei rami segue una tassonomia semantica prefissata:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{\texttt{feat/*}}: Implementazione di nuove funzionalità di dominio, endpoint REST o viste operative (es. `feat/cp-sat-solver`, `feat/view-scenario-builder`, `feat/ai-rule-engine`).
+    \item \textbf{\texttt{test/*}}: Sviluppo di suite di test automatici, benchmark prestazionali o generatori di scenari randomizzati (es. `test/solver-parity`, `test/frontend-foundation`).
+    \item \textbf{\texttt{style/*}}: Raffinamento del design system, accessibilità, palette e temi ad alto contrasto (es. `style/design-tokens`, `style/view-map`).
+    \item \textbf{\texttt{chore/*}}: Manutenzione dell'infrastruttura, configurazione Docker, lockfile e toolchain (es. `chore/deploy-docker`, `chore/frontend-toolchain`).
+    \item \textbf{\texttt{docs/*}}: Redazione della documentazione tecnica, manualistica e allineamento dei deliverable (es. `docs/readme-and-ci`, `docs/d2-specification`).
+\end{itemize}
+
+\subsubsection{Convenzione dei Messaggi di Commit}
+In ossequio al principio di trasparenza e tracciabilità richiesto dal corso, i commit adottano lo standard \emph{Conventional Commits} declinato in lingua italiana, consentendo l'immediata comprensione dell'impatto di ciascuna modifica sul codice:
+\begin{center}
+    \texttt{<tipo>(<ambito>): <descrizione concisa e imperativa>}
+\end{center}
+Esempi reali tratti dalla cronologia di TEPO includono:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.15em]
+    \item \texttt{feat(optimization): integrazione solver CP-SAT e tie-break lessicografico}
+    \item \texttt{feat(views): mappa georeferenziata degli edifici di Trento con Leaflet}
+    \item \texttt{test(solver): parita formale tra solver esatto e brute-force su 100 istanze}
+    \item \texttt{fix(map): dark filter su OpenStreetMap per visualizzazione senza watermark}
+    \item \texttt{chore(deploy): blueprint Infrastructure-as-Code per Render e dynamic port}
+\end{itemize}
+
+\subsection{Pipeline di Continuous Integration e Continuous Deployment}
+L'affidabilità del sistema è garantita da una pipeline di automazione configurata tramite GitHub Actions (`.github/workflows/ci.yml`), che viene eseguita automaticamente ad ogni operazione di \texttt{push} o apertura di \texttt{pull\_request} verso il ramo \texttt{main}.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm and 1cm,
+        job/.style={draw=tepoblue, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\small\bfseries, minimum height=1.1cm, minimum width=3.6cm},
+        stage/.style={draw=black!60, fill=white, rounded corners=2pt, font=\scriptsize, align=center, minimum height=0.6cm, minimum width=3.4cm},
+        arrow/.style={-Latex, thick, draw=black!80}
+    ]
+        % Trigger
+        \node[draw=orange!80, fill=orange!10, rounded corners=3pt, font=\small\bfseries, minimum width=12.5cm, minimum height=0.8cm] (trigger) {
+            Trigger: Push o Pull Request sul ramo `main`
+        };
+
+        % Job 1: Backend
+        \node[job, below left=0.8cm and 0.2cm of trigger.south] (backend_job) {Job 1: test-backend};
+        \node[stage, below=0.2cm of backend_job] (b_step1) {Checkout Repo \& Setup JDK 21};
+        \node[stage, below=0.2cm of b_step1] (b_step2) {Maven Dependencies Cache};
+        \node[stage, below=0.2cm of b_step2] (b_step3) {Esecuzione 119 Unit Test (\texttt{mvn test})};
+
+        % Job 2: Frontend
+        \node[job, below right=0.8cm and 0.2cm of trigger.south] (frontend_job) {Job 2: test-frontend};
+        \node[stage, below=0.2cm of frontend_job] (f_step1) {Checkout Repo \& Setup Node.js 24};
+        \node[stage, below=0.2cm of f_step1] (f_step2) {npm ci (Dipendenze lockate)};
+        \node[stage, below=0.2cm of f_step2] (f_step3) {Esecuzione 69 Test (\texttt{vitest})};
+        \node[stage, below=0.2cm of f_step3] (f_step4) {Build di Produzione (\texttt{vite build})};
+
+        % Deploy Job
+        \node[job, fill=tepogreen!15, draw=tepogreen, below=4.2cm of trigger.south, minimum width=8cm] (deploy_job) {
+            Job 3: deploy (Trigger automatico Render)\\
+            \scriptsize Eseguito solo su push a `main` e previa riuscita dei test
+        };
+
+        % Connectors
+        \draw[arrow] (trigger) -| (backend_job);
+        \draw[arrow] (trigger) -| (frontend_job);
+        \draw[arrow] (b_step3) |- (deploy_job);
+        \draw[arrow] (f_step4) |- (deploy_job);
+    \end{tikzpicture}
+    \caption{Architettura della pipeline di CI/CD di TEPO su GitHub Actions.}
+    \label{fig:pipeline_ci}
+\end{figure}
+
+Il flusso della pipeline si articola in tre job indipendenti e coordinati:
+\begin{enumerate}[leftmargin=1.5em, itemsep=0.3em]
+    \item \textbf{\texttt{test-backend}}: Esegue un ambiente pulito `ubuntu-latest` configurato con Eclipse Temurin JDK 21. Compila il sorgente Java, inizializza le librerie native C++ di Google OR-Tools ed esegue la suite completa di 119 test automatici (unitari, di regressione, parità solver e integrazione web).
+    \item \textbf{\texttt{test-frontend}}: Opera in ambiente `ubuntu-latest` con runtime Node.js 24. Installa in modo deterministico le dipendenze tramite `npm ci`, esegue i 69 test automatici con Vitest e React Testing Library, e infine compila il bundle statico di produzione verificando l'assenza di errori di sintassi o violazioni di tipo TypeScript.
+    \item \textbf{\texttt{deploy}}: Condizionato al superamento con esito positivo di entrambi i job di test e vincolato ai soli commit integrati sul ramo `main`. Invia una richiesta HTTP POST autenticata all'endpoint di webhook della piattaforma Render, innescando la ricompilazione e la pubblicazione automatica in cloud dell'immagine Docker aggiornata, senza disservizi per l'utente (\emph{zero-downtime rolling update}).
+\end{enumerate}
+
+\subsection{Configurazione degli Ambienti e Manuale di Avvio}
+Per agevolare il collaudo da parte della commissione d'esame e dei tecnici comunali, TEPO è predisposto per operare in tre modalità distinte:
+
+\subsubsection{1. Avvio Rapido con Docker Compose (Consigliato)}
+È la modalità consigliata per qualunque sistema operativo, in quanto non richiede l'installazione locale di Java, Maven o Node.js, necessitando del solo demone Docker Desktop:
+\begin{lstlisting}[language=bash]
+# Dalla radice del repository:
+docker compose up --build
+\end{lstlisting}
+L'orchestrazione avvia automaticamente tre container interconnessi:
+\begin{itemize}[leftmargin=1.4em, itemsep=0.15em]
+    \item \textbf{\texttt{tepo-db}}: Database PostgreSQL 16 su porta \texttt{5432}, inizializzato con volume persistente e schema Flyway;
+    \item \textbf{\texttt{tepo-backend}}: Backend Spring Boot su porta \texttt{8080}, pronto all'indirizzo \url{http://localhost:8080};
+    \item \textbf{\texttt{tepo-frontend}}: Web server Nginx su porta \texttt{5173}, accessibile su \url{http://localhost:5173}.
+\end{itemize}
+
+\subsubsection{2. Esecuzione in Ambiente di Sviluppo Locale (Hot-Reload)}
+Per attività di modifica o debug con ricaricamento istantaneo del codice sorgente:
+\begin{lstlisting}[language=bash]
+# 1. Avvio del solo container database:
+docker compose up -d db
+
+# 2. Avvio del backend Spring Boot (Terminale 1):
+cd backend
+mvn spring-boot:run
+
+# 3. Avvio del frontend Vite (Terminale 2):
+cd frontend
+npm install
+npm run dev
+\end{lstlisting}
+
+\subsubsection{3. Esecuzione della Suite di Test}
+La verifica della qualità del codice può essere replicata fedelmente in locale:
+\begin{lstlisting}[language=bash]
+# Test backend completi:
+cd backend && mvn test
+
+# Test frontend completi:
+cd frontend && npm test
+
+# Script dedicato per Windows (supporto architetture x64/ARM64):
+.\scripts\test-backend.ps1
+\end{lstlisting}

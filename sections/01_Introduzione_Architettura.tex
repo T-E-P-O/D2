@@ -1,0 +1,141 @@
+\section{Introduzione e Architettura di Sistema}
+\label{sec:introduzione_architettura}
+
+\subsection{Scopo e Obiettivi del Deliverable D2}
+Il presente documento costituisce il secondo deliverable formale (\textbf{D2 --- Sviluppo e Architettura}) del progetto \textbf{TEPO} (\emph{Trento Energy Portfolio Optimizer}), sviluppato dal Gruppo T14 nell'ambito dell'insegnamento di Ingegneria del Software (A.A. 2026/2027) presso l'Università degli Studi di Trento, in cooperazione con l'iniziativa ``100 progetti per il Comune di Trento''.
+
+Mentre il precedente documento D1 ha stabilito la baseline ingegneristica dei requisiti --- delineando l'analisi del dominio, i requisiti funzionali (RF) e non funzionali (RNF), gli use case diagram (UD), le user story (US) con i relativi criteri di accettazione e i wireframe dell'interfaccia utente --- il documento D2 descrive in maniera analitica e verificabile la realizzazione concreta del sistema software.
+In conformità alle direttive didattiche per l'anno accademico 2026/2027, la documentazione di progetto ha subìto una razionalizzazione strategica: l'analisi architetturale, la modellazione formale dei componenti e delle classi (precedentemente collocate nel deliverable D3) sono state integrate direttamente nel D2. Tale unificazione garantisce una continuità metodologica in linea con il paradigma dello \emph{Specification-Driven Development} (SDD), documentando passo dopo passo come l'architettura logica e la struttura delle classi si siano evolute nel corso degli sprint di implementazione in risposta alle specifiche delle user story.
+
+Gli obiettivi primari di questo deliverable sono:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.3em]
+    \item \textbf{Documentare il processo di sviluppo iterativo e incrementale}, strutturato in quattro sprint sequenziali con le relative specifiche, DoR, DoD, piani di implementazione, test automatici e retrospettive critiche.
+    \item \textbf{Illustrare l'organizzazione del repository e l'infrastruttura di Continuous Integration e Continuous Deployment (CI/CD)}, assicurando la tracciabilità delle modifiche, la qualità del codice e l'automatizzazione del rilascio.
+    \item \textbf{Fornire la modellazione architetturale e strutturale completa}, mediante diagrammi UML standardizzati dei componenti, delle classi e delle sequenze d'interazione, evidenziandone la progressione da una vista iniziale al modello finale integrato.
+    \item \textbf{Formalizzare le specifiche delle Web API RESTful}, corredate da schemi JSON di richiesta e risposta, vincoli semantici e codici di stato HTTP, conformemente allo standard OpenAPI 3.0.
+    \item \textbf{Dettagliare l'ingegneria del Front-End}, analizzando la resa a runtime del design system civico, le logiche applicative reattive e le funzionalità di supporto decisionale dell'operatore tecnico.
+    \item \textbf{Specificare l'infrastruttura di containerizzazione e deployment in ambiente cloud}, garantendo l'accessibilità pubblica del prototipo collaudato sulla piattaforma Render all'indirizzo \url{https://tepo.onrender.com}.
+\end{itemize}
+
+\subsection{Principi Guida e Filosofia Decisionale}
+Il contesto applicativo della Pubblica Amministrazione impone requisiti stringenti di trasparenza, equità procedurale e responsabilità amministrativa. Un sistema di supporto decisionale destinato a guidare l'allocazione di risorse economiche pubbliche per l'efficientamento energetico non può e non deve configurarsi come una ``scatola nera'' imperscrutabile. Al contrario, ogni output deve poter essere ricostruito, giustificato e difeso in sede tecnica e istituzionale.
+Su queste basi poggiano i quattro pilastri fondanti di TEPO:
+
+\paragraph{1. Sovranità Umana: ``L'AI propone, l'utente confronta, il Comune decide''}
+TEPO rifiuta qualsiasi forma di automazione prescrittiva non controllata. L'intelligenza artificiale generativa o le euristiche probabilistiche non hanno facoltà deliberativa né accesso in scrittura ai dati di stato del sistema. L'eventuale modulo AI funge unicamente da assistente conversazionale human-in-the-loop per agevolare la formulazione parametrica delle richieste in linguaggio naturale. L'operatore tecnico mantiene il pieno controllo: revisiona i parametri, esamina i vincoli, confronta gli scenari alternativi e sottopone le risultanze al decisore amministrativo, a cui solo spetta la responsabilità dell'atto decisionale.
+
+\paragraph{2. Determinismo e Riproducibilità Matematica}
+A parità di dati di catalogo, budget allocato, obiettivo selezionato e vincoli imposti, TEPO garantisce in modo assoluto l'ottenimento della medesima soluzione ottima, indipendentemente dall'ordine con cui le alternative sono memorizzate nel database o dall'ambiente di esecuzione. Questo risultato è garantito da:
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Solver Esatto MILP/CP-SAT:} Formulazione rigorosa come problema di ottimizzazione combinatoria (0-1 Knapsack multidimensionale con vincoli logici booleani), risolto con garanzia matematica di ottimalità globale tramite branch-and-cut e satisfiability propagation.
+    \item \textbf{Tie-Break Lessicografico Canonico a 4 Passi:} Eliminazione dell'arbitrarietà nelle soluzioni a parità di valore obiettivo attraverso una cascata deterministica (massimizzazione beneficio primario $\to$ minimizzazione costo complessivo $\to$ minimizzazione numero interventi $\to$ spareggio lessicografico sugli identificativi).
+    \item \textbf{Hash Canonico del Problema ($H(P)$):} Calcolo crittografico SHA-256 su una serializzazione canonica ordinata dei parametri di scenario e dei candidati, registrato in audit trail per certificare l'integrità del calcolo.
+\end{itemize}
+
+\paragraph{3. Trasparenza e Spiegabilità delle Motivazioni}
+La mancata selezione di un intervento non viene mai lasciata all'interpretazione dell'utente. TEPO integra un motore di spiegazione deterministico che analizza lo stato della soluzione e classifica ogni intervento secondo una tassonomia esplicita di causali (incluso per contributo ottimo; escluso per barriera di budget residuo; escluso per violazione di mutua esclusione; escluso per mancato soddisfacimento del prerequisito; escluso per saturazione del limite di tipologia; causa non determinabile localmente).
+
+\paragraph{4. Integrità e Neutralità del Dato}
+Il sistema opera su un dataset sintetico dimostrativo composto da 100 edifici comunali e 300 opzioni di intervento suddivise su 6 tipologie tecnologiche. La natura dimostrativa e non ufficiale del dato è esposta continuativamente in ogni schermata dell'interfaccia mediante il badge permanente ``DEMO'', scongiurando qualsiasi fraintendimento circa il valore formale delle stime visualizzate.
+
+\subsection{Stack Tecnologico e Scelte Ingegneristiche}
+L'architettura di TEPO è stata concepita secondo un modello stratificato a disaccoppiamento forte (Tiered Architecture), selezionando componenti di classe enterprise capaci di coniugare prestazioni computazionali, integrità dei dati e manutenibilità a lungo termine.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.95,
+        node distance=0.9cm and 1.2cm,
+        layer/.style={draw=tepoblue!70, fill=tepoblue!5, rounded corners=4pt, very thick, inner sep=8pt},
+        component/.style={draw=black!70, fill=white, rounded corners=3pt, thick, align=center, font=\small\bfseries, minimum height=1cm},
+        database/.style={cylinder, draw=black!70, fill=white, thick, shape border rotate=90, aspect=0.25, minimum width=2.4cm, minimum height=1.2cm, align=center, font=\small\bfseries},
+        edge/.style={-Latex, thick, draw=black!80}
+    ]
+        % Client Tier
+        \node[component, fill=cyan!10, minimum width=13cm] (client) {
+            \textbf{Presentation Tier: Client Web SPA}\\
+            \footnotesize React 18 $\cdot$ TypeScript $\cdot$ Vite $\cdot$ Tailwind/Token CSS Civico $\cdot$ Leaflet GIS $\cdot$ SVG Accessibili
+        };
+
+        % Reverse Proxy / Gateway
+        \node[component, fill=gray!15, minimum width=13cm, below=0.6cm of client] (proxy) {
+            \textbf{Web Server \& Routing Tier: Nginx Reverse Proxy / Spring SPA Forwarder}\\
+            \footnotesize Static Asset Serving $\cdot$ API Reverse Proxy $\cdot$ Gzip Compression $\cdot$ SPA HTML5 History Routing
+        };
+
+        % Application Tier
+        \node[component, fill=green!10, minimum width=13cm, below=0.6cm of proxy] (backend) {
+            \textbf{Application Tier: Spring Boot 3.3.4 (Java 21 LTS)}\\
+            \footnotesize REST Controllers $\cdot$ Optimization Service $\cdot$ Sensitivity Engine $\cdot$ Explanation Engine $\cdot$ Problem Hasher
+        };
+
+        % Native Optimizer Tier & AI Tier
+        \node[component, fill=orange!15, minimum width=6.2cm, below=0.6cm of backend.south west, anchor=north west] (solver) {
+            \textbf{Optimization Engine}\\
+            \footnotesize Google OR-Tools CP-SAT 9.11\\
+            \scriptsize Native C++ Solver via JNI $\cdot$ MILP Branch-and-Cut
+        };
+
+        \node[component, fill=purple!15, minimum width=6.2cm, below=0.6cm of backend.south east, anchor=north east] (ai) {
+            \textbf{AI Assistant Subsystem}\\
+            \footnotesize Hybrid Human-in-the-Loop\\
+            \scriptsize LLM Provider (REST) + Rule-Based Fallback
+        };
+
+        % Persistence Tier
+        \node[database, fill=yellow!15, minimum width=13cm, below=0.6cm of solver.south west, anchor=north west] (db) {
+            \textbf{Persistence Tier: PostgreSQL 16 Relational Engine}\\
+            \footnotesize Schema Versionato con Flyway (V1, V2) $\cdot$ Integrità Referenziale Foreign Keys $\cdot$ Transazioni ACID
+        };
+
+        % Connectors
+        \draw[edge] (client) -- node[right, font=\scriptsize] {HTTPS / JSON REST} (proxy);
+        \draw[edge] (proxy) -- node[right, font=\scriptsize] {Internal HTTP Proxy (8080)} (backend);
+        \draw[edge] (backend.south -| solver.north) -- node[right, font=\scriptsize] {In-Process JNI} (solver.north);
+        \draw[edge] (backend.south -| ai.north) -- node[right, font=\scriptsize] {Structured Prompt / Heuristic} (ai.north);
+        \draw[edge] (backend.south -| db.north) -- node[right, font=\scriptsize] {JDBC / HikariCP Pool} (db.north);
+    \end{tikzpicture}
+    \caption{Architettura a livelli logici e stack tecnologico di TEPO.}
+    \label{fig:architettura_livelli}
+\end{figure}
+
+La Tabella~\ref{tab:stack_tecnologico} riassume la configurazione analitica dei singoli layer tecnologici, evidenziandone la motivazione ingegneristica e il ruolo di sistema.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}p{3.2cm}p{4cm}p{8.5cm}@{}}
+\toprule
+\textbf{Ambito} & \textbf{Tecnologia Selezionata} & \textbf{Motivazione e Ruolo Architetturale} \\
+\midrule
+\textbf{Linguaggio Backend} & Java 21 LTS & Tipizzazione statica forte, Virtual Threads (Project Loom) per alta scalabilità I/O, robustezza del runtime enterprise. \\
+\textbf{Framework Backend} & Spring Boot 3.3.4 & Inversion of Control, configurazione modulare, validazione dichiarativa dei DTO, integrazione nativa con OpenAPI/Swagger. \\
+\textbf{Solver Matematico} & Google OR-Tools CP-SAT 9.11 & Risoluzione esatta di problemi di Constraint Programming e Integer Programming; supporto nativo a vincoli logici booleani con implicazione; performance ottimali garantite dal core C++ compilato e interfacciato tramite Java Native Interface (JNI). \\
+\textbf{Database Relazionale} & PostgreSQL 16 & Motore open source robusto, supporto per indici B-Tree avanzati, gestione delle chiavi esterne per garantire l'integrità referenziale, transazioni serializzabili. \\
+\textbf{Database Migration} & Flyway 10 & Versionamento deterministico dello schema relazionale (`V1\_\_init.sql`, `V2\_\_optimization\_runs.sql`); allineamento automatico tra ambienti di test, locale e cloud. \\
+\textbf{Linguaggio Frontend} & TypeScript 5.5 & Tipizzazione statica end-to-end allineata ai contratti DTO del backend, prevenzione di errori di runtime e manutenibilità. \\
+\textbf{Libreria UI Frontend} & React 18 & Modello a componenti dichiarativo, gestione dello stato reattivo e concorrente, facilità di composizione delle viste decisionali. \\
+\textbf{Tooling \& Bundler} & Vite 5 & Server di sviluppo ultra-rapido (ESM nativo), ottimizzazione del bundle di produzione, integrazione nativa con suite Vitest. \\
+\textbf{Cartografia \& GIS} & Leaflet 1.9 & Rendering di mappe interattive georeferenziate, clustering degli edifici di Trento, visualizzazione ad alto contrasto con supporto dark mode senza dipendenze proprietarie. \\
+\textbf{Containerizzazione} & Docker \& Docker Compose & Multi-stage build per la minimizzazione delle immagini, isolamento completo delle dipendenze, parità garantita tra sviluppo locale e cloud. \\
+\textbf{Piattaforma Cloud} & Render (PaaS) & Hosting nativo di container Docker, gestione integrata di istanze PostgreSQL con TLS, Infrastructure-as-Code via `render.yaml`. \\
+\bottomrule
+\end{tabular}
+\caption{Quadro di sintesi dello stack tecnologico di TEPO.}
+\label{tab:stack_tecnologico}
+\end{table}
+
+\subsection{Analisi dei Trade-off e Scelte Alternative}
+Durante le fasi di concezione architetturale sono state vagliate molteplici alternative tecnologiche rispetto alle esigenze formali del progetto. L'esito delle valutazioni comparative è descritto nei paragrafi seguenti:
+
+\subsubsection{Backend: Java 21 / Spring Boot vs Node.js / Express}
+Sebbene Node.js ed Express costituiscano uno standard diffuso per lo sviluppo web rapido, l'ecosistema Node.js presenta gravi lacune nell'ambito dell'ottimizzazione combinatoria esatta. Non esistono librerie JavaScript o TypeScript mature capaci di risolvere problemi MILP/CP-SAT complessi con la medesima efficienza, stabilità e supporto ai vincoli logici booleani garantiti da Google OR-Tools. I wrapper non ufficiali per Node.js risultano obsoleti o vincolati a runtime C++ esterni instabili. L'adozione di Java 21 e Spring Boot ha consentito l'integrazione nativa dei binari ufficiali di OR-Tools tramite JNI, beneficiando al contempo della rigorosa tipizzazione statica e della gestione affidabile del pool di connessioni JDBC (HikariCP).
+
+\subsubsection{Ottimizzazione: Solver Esatto CP-SAT vs Euristica Greedy}
+In fase preliminare è stata analizzata la possibilità di adottare un approccio euristico-ingolosito (Greedy basato sul rapporto beneficio/costo $\frac{\Delta B}{C}$). Come ampiamente dimostrato nei test sperimentali condotti nel repository (`GreedyBaselineComparisonTest`), l'approccio greedy fallisce sistematicamente nel garantire l'ottimo globale in presenza di vincoli di budget e vincoli logici (incompatibilità e prerequisiti), producendo scostamenti sub-ottimali fino al 18\% del valore obiettivo. L'adozione del solver esatto CP-SAT, accompagnato dal protocollo di spareggio lessicografico deterministico, assicura la certificazione formale dell'ottimalità richiesta per legge e per rigore metodologico negli atti della PA.
+
+\subsubsection{Persistenza: Database Relazionale (PostgreSQL) vs Documentale (MongoDB)}
+Il dominio di TEPO è caratterizzato da relazioni strutturali stringenti: edifici, interventi, tipologie e scenari sono legati da dipendenze referenziali precise. Un database orientato ai documenti avrebbe richiesto la duplicazione dei dati o la gestione manuale a livello applicativo dell'integrità referenziale, esponendo il sistema al rischio di orfani o incoerenze durante le operazioni di importazione CSV. PostgreSQL ha garantito vincoli di chiave esterna (`FOREIGN KEY`), indici composti mirati e transazioni conformi allo standard ACID, preservando la consistenza dello stato applicativo anche in caso di anomalie improvvise.
+
+\subsubsection{Architettura Client: Single Page Application (React) vs Server-Side Rendering (SSR)}
+La natura operativa di TEPO richiede un'interattività continua, manipolazione di filtri in tempo reale, esplorazione cartografica, selezione interattiva di candidati e calcolo istantaneo di metriche differenziali nel confronto What-If. Un'architettura basata su Server-Side Rendering avrebbe comportato continui ricaricamenti di pagina, penalizzando l'esperienza d'uso e la reattività del flusso di lavoro dell'operatore tecnico. L'adozione di una SPA React affiancata da un client API fortemente tipizzato ha consentito di confinare l'interazione grafica sul client, riducendo al minimo il traffico di rete verso le sole chiamate JSON REST.
