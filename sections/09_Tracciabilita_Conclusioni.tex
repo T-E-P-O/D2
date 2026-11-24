@@ -4,44 +4,50 @@
 \subsection{Matrice di Tracciabilità dei Requisiti (D1 vs D2)}
 A coronamento del processo di ingegneria del software orientato alle specifiche, la Tabella~\ref{tab:matrice_tracciabilita_finale} documenta la chiusura del cerchio di tracciabilità: ogni singolo Requisito Funzionale (RF) e Requisito Non Funzionale (RNF) stabilito nel documento D1 trova una precisa corrispondenza nella User Story di riferimento, nell'epica di sviluppo, nel modulo software implementato, nell'endpoint REST esposto e nella relativa suite di test automatizzati.
 
-\begin{longtable}{@{}p{1.2cm}p{1.2cm}p{1.2cm}p{3.2cm}p{3cm}p{2.8cm}p{1.2cm}@{}}
+\begin{landscape}
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{1.02}
+\begin{longtable}{@{} >{\centering\arraybackslash}p{1.4cm} >{\centering\arraybackslash}p{1.2cm} >{\centering\arraybackslash}p{1.1cm} >{\RaggedRight\arraybackslash}p{5.4cm} >{\RaggedRight\arraybackslash}p{6.0cm} >{\RaggedRight\arraybackslash}p{6.6cm} >{\centering\arraybackslash}p{1.3cm} @{}}
 \caption{Matrice di tracciabilità end-to-end tra requisiti di D1 e realizzazione in D2.} \label{tab:matrice_tracciabilita_finale} \\
 \toprule
-\textbf{RF/RNF} & \textbf{US} & \textbf{Epica} & \textbf{Modulo / Classe Java/TS} & \textbf{Endpoint REST} & \textbf{Suite di Test} & \textbf{Stato} \\
+\textbf{\makecell{Requisito\\D1}} & \textbf{\makecell{User\\Story}} & \textbf{Epica} & \textbf{\makecell[l]{Modulo / Componente\\Java / TypeScript}} & \textbf{\makecell[l]{Endpoint REST\\o Canale Operativo}} & \textbf{\makecell[l]{Suite di Test\\Automatizzati}} & \textbf{\makecell{Copertura\\/ Stato}} \\
 \midrule
 \endfirsthead
 \multicolumn{7}{c}%
 {{\bfseries \tablename\ \thetable{} -- Continua dalla pagina precedente}} \\
 \toprule
-\textbf{RF/RNF} & \textbf{US} & \textbf{Epica} & \textbf{Modulo / Classe Java/TS} & \textbf{Endpoint REST} & \textbf{Suite di Test} & \textbf{Stato} \\
+\textbf{\makecell{Requisito\\D1}} & \textbf{\makecell{User\\Story}} & \textbf{Epica} & \textbf{\makecell[l]{Modulo / Componente\\Java / TypeScript}} & \textbf{\makecell[l]{Endpoint REST\\o Canale Operativo}} & \textbf{\makecell[l]{Suite di Test\\Automatizzati}} & \textbf{\makecell{Copertura\\/ Stato}} \\
 \midrule
 \endhead
 \midrule
-\multicolumn{7}{r}{{Continua nella pagina successiva...}} \\
+\multicolumn{7}{r}{\emph{Continua nella pagina successiva...}} \\
 \bottomrule
 \endfoot
 \bottomrule
 \endlastfoot
 
-RF-01 & US-01 & EP-01 & \texttt{BuildingController}, \texttt{BuildingsPage} & \texttt{GET /api/buildings} & \texttt{BuildingsPage.test} & 100\% \\
-RF-02 & US-02 & EP-01 & \texttt{InterventionController}, \texttt{InterventionsPage} & \texttt{GET /api/interventions} & \texttt{InterventionsPage.test} & 100\% \\
-RF-03 & US-03 & EP-02 & \texttt{ScenarioController}, \texttt{ScenarioBuilder} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ScenarioBuilder.test} & 100\% \\
-RF-04 & US-03 & EP-02 & \texttt{ScenarioConstraint}, \texttt{ScenarioBuilder} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ScenarioControllerTest} & 100\% \\
-RF-05 & US-04 & EP-03 & \texttt{OrToolsSolver}, \texttt{OptimizationService} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{OrToolsSolverTest} & 100\% \\
-RF-06 & US-05 & EP-03 & \texttt{ExplanationService}, \texttt{ResultPage} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ExplanationReasonCodeTest} & 100\% \\
-RF-07 & US-14 & EP-03 & \texttt{ProblemHasher}, \texttt{AuditController} & \texttt{GET /api/scenarios/runs/\{id\}} & \texttt{SolverParityTest} & 100\% \\
-RF-08 & US-08 & EP-01 & \texttt{MapController}, \texttt{MapPage} (Leaflet) & \texttt{GET /api/map/buildings} & \texttt{MapPage.test} & 100\% \\
-RF-09 & US-06 & EP-04 & \texttt{scenarioStore.ts}, \texttt{ComparePage} & Client-side State & \texttt{ComparePage.test} & 100\% \\
-RF-10 & US-07 & EP-04 & \texttt{SensitivityService}, \texttt{SensitivityPage} & \texttt{POST /api/sensitivity/sweep} & \texttt{SensitivityServiceTest} & 100\% \\
-RF-11 & US-11,12 & EP-05 & \texttt{AiController}, \texttt{AiAssistantPanel} & \texttt{POST /api/ai/propose-scenario} & \texttt{LlmAiAssistantTest} & 100\% \\
-RF-12 & US-10 & EP-05 & \texttt{ImportController}, \texttt{ImportPage} & \texttt{POST /api/import/validate} & \texttt{ImportControllerTest} & 100\% \\
+RF-01 & US-01 & EP-01 & \texttt{BuildingController}, \texttt{BuildingsPage} & \texttt{GET /api/buildings} & \texttt{BuildingsPage.test.tsx} & 100\% \\
+RF-02 & US-02 & EP-01 & \texttt{InterventionController}, \allowbreak\texttt{InterventionsPage} & \texttt{GET /api/interventions} & \texttt{InterventionsPage.test.tsx} & 100\% \\
+RF-03 & US-03 & EP-02 & \texttt{ScenarioController}, \texttt{ScenarioBuilder} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ScenarioBuilder.test.tsx} & 100\% \\
+RF-04 & US-03 & EP-02 & \texttt{ScenarioConstraint}, \texttt{ScenarioBuilder} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ScenarioControllerTest.java} & 100\% \\
+RF-05 & US-04 & EP-03 & \texttt{OrToolsSolver}, \texttt{OptimizationService} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{OrToolsSolverTest.java} & 100\% \\
+RF-06 & US-05 & EP-03 & \texttt{ExplanationService}, \texttt{ResultPage} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ExplanationReasonCodeTest.java} & 100\% \\
+RF-07 & US-14 & EP-03 & \texttt{ProblemHasher}, \texttt{AuditController} & \texttt{GET /api/scenarios/runs/\{id\}} & \texttt{SolverParityTest.java} & 100\% \\
+RF-08 & US-08 & EP-01 & \texttt{MapController}, \texttt{MapPage} (Leaflet) & \texttt{GET /api/map/buildings} & \texttt{MapPage.test.tsx} & 100\% \\
+RF-09 & US-06 & EP-04 & \texttt{scenarioStore.ts}, \texttt{ComparePage} & Client-side State Store & \texttt{ComparePage.test.tsx} & 100\% \\
+RF-10 & US-07 & EP-04 & \texttt{SensitivityService}, \texttt{SensitivityPage} & \texttt{POST /api/sensitivity/sweep} & \texttt{SensitivityServiceTest.java} & 100\% \\
+RF-11 & US-11,12 & EP-05 & \texttt{AiController}, \texttt{AiAssistantPanel} & \texttt{POST /api/ai/propose-scenario} & \texttt{LlmAiAssistantTest.java} & 100\% \\
+RF-12 & US-10 & EP-05 & \texttt{ImportController}, \texttt{ImportPage} & \texttt{POST /api/import/validate} & \texttt{ImportControllerTest.java} & 100\% \\
 \midrule
-RNF-01 & US-13 & TR-01 & Token CSS Civico, \texttt{ThemeToggle} & Client-side CSS & \texttt{shell.test.tsx} & 100\% \\
-RNF-02 & US-15 & TR-02 & Foglio Stampa CSS (\texttt{@media print}) & Client-side Print & \texttt{foundation.test.ts} & 100\% \\
-RNF-03 & US-04 & TR-03 & \texttt{OrToolsSolver} (Thread-Safe JNI) & \texttt{/api/scenarios/*/optimize} & \texttt{SolverRandomizedParityTest} & 100\% \\
-RNF-04 & US-14 & TR-04 & \texttt{OptimizationRunRepository} (PostgreSQL) & \texttt{/api/scenarios/runs/*} & \texttt{DatabaseUrlTest} & 100\% \\
-\bottomrule
+RNF-01 & US-13 & TR-01 & Token CSS Civico, \texttt{ThemeToggle} & Client-side CSS Variables & \texttt{shell.test.tsx} & 100\% \\
+RNF-02 & US-15 & TR-02 & Foglio Stampa CSS (\texttt{@media print}) & Client-side Print Engine & \texttt{foundation.test.ts} & 100\% \\
+RNF-03 & US-04 & TR-03 & \texttt{OrToolsSolver} (Thread-Safe JNI) & \texttt{POST /api/scenarios/*/optimize} & \texttt{SolverRandomizedParityTest.java} & 100\% \\
+RNF-04 & US-14 & TR-04 & \texttt{OptimizationRunRepository} \allowbreak(PostgreSQL) & \texttt{GET /api/scenarios/runs/*} & \texttt{DatabaseUrlTest.java} & 100\% \\
 \end{longtable}
+\endgroup
+\end{landscape}
 
 \subsection{Analisi delle Variazioni e Raffinamenti Rispetto alla Baseline}
 Nel corso dello sviluppo incrementale, il confronto continuo con i vincoli tecnologici e con gli scenari d'uso reali ha portato all'introduzione di alcuni perfezionamenti ingegneristici rispetto alla bozza iniziale delineata nel D1:

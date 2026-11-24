@@ -22,7 +22,7 @@ Similmente, il frontend è strutturato su due livelli:
 
 \subsubsection{Orchestrazione Locale con Docker Compose}
 L'orchestrazione locale è governata dal file \texttt{docker-compose.yaml}, che istanzia una rete privata interna e coordina i tre servizi essenziali:
-\begin{lstlisting}, caption={Configurazione dei servizi in docker-compose.yaml.}]
+\begin{lstlisting}[caption={Configurazione dei servizi in docker-compose.yaml.}]
 services:
   db:
     image: postgres:16-alpine
@@ -87,7 +87,7 @@ L'ambiente di collaudo pubblico accessibile da commissione e utenti è distribui
 
 Il deployment è interamente automatizzato secondo i principi dell'\textbf{Infrastructure-as-Code} (IaC) per mezzo del file di specifica \texttt{render.yaml} presente nella radice del repository:
 
-\begin{lstlisting}, caption={Estratto del blueprint Infrastructure-as-Code render.yaml.}]
+\begin{lstlisting}[caption={Estratto del blueprint Infrastructure-as-Code render.yaml.}]
 services:
   - type: web
     name: tepo
@@ -158,18 +158,18 @@ Il sistema distribuito su Render è stato sottoposto a collaudo e monitoraggio p
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{@{}p{5cm}p{3cm}p{7cm}@{}}
+\begin{tabularx}{\textwidth}{@{} >{\bfseries}p{4.8cm} p{2.4cm} >{\RaggedRight\arraybackslash}X @{}}
 \toprule
 \textbf{Parametro Prestazionale} & \textbf{Valore Rilevato} & \textbf{Note di Esercizio e Tolleranze} \\
 \midrule
-\textbf{Tempo di Risposta API Lettura} & $< 45$ ms & Misurato su \texttt{GET /api/buildings} e \texttt{/api/interventions} a regime. \\
-\textbf{Tempo di Ottimizzazione CP-SAT} & $120$ -- $180$ ms & Calcolo del portafoglio ottimo su 300 variabili binarie e 4 passi di tie-break lessicografico. \\
-\textbf{Tempo di Sweep Sensibilità (11 pt)} & $1.2$ -- $1.8$ s & Sequenza di 11 ottimizzazioni esatte progressive con ricalcolo delle spiegazioni. \\
-\textbf{Impronta Memoria Backend} & $\approx 290$ MB & Gestione memoria JVM calibrata per rientrare agevolmente nel limite di 512 MB del tier gratuito. \\
-\textbf{Disponibilità del Servizio} & $> 99.5\%$ & Gestione dell'avvio a freddo (cold start di circa 40s dopo inattività del tier free). \\
-\textbf{Ripristino del Dataset Demo} & $< 200$ ms & Esecuzione transazionale dell'endpoint di reset \texttt{/api/import/reset-demo}. \\
+Tempo di Risposta API Lettura & $< 45$ ms & Misurato su \texttt{GET /api/buildings} e \texttt{/api/interventions} a regime. \\
+Tempo di Ottimizzazione CP-SAT & $120$ -- $180$ ms & Calcolo del portafoglio ottimo su 300 variabili binarie e 4 passi di tie-break lessicografico. \\
+Tempo di Sweep Sensibilità (11 pt) & $1.2$ -- $1.8$ s & Sequenza di 11 ottimizzazioni esatte progressive con ricalcolo delle spiegazioni. \\
+Impronta Memoria Backend & $\approx 290$ MB & Gestione memoria JVM calibrata per rientrare agevolmente nel limite di 512 MB del tier gratuito. \\
+Disponibilità del Servizio & $> 99.5\%$ & Gestione dell'avvio a freddo (cold start di circa 40s dopo inattività del tier free). \\
+Ripristino del Dataset Demo & $< 200$ ms & Esecuzione transazionale dell'endpoint di reset \texttt{/api/import/reset-demo}. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \caption{Metriche prestazionali rilevate nell'ambiente di produzione cloud su Render.}
 \label{tab:sla_produzione}
 \end{table}

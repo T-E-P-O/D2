@@ -42,20 +42,43 @@ La pianificazione delle attività di sviluppo ha fatto ricorso a metriche agili 
 \subsection{Tabella del Product Backlog}
 La Tabella~\ref{tab:product_backlog} illustra il Product Backlog integrale di TEPO, specificando per ciascuna user story l'epica associata, i requisiti funzionali coperti, la complessità stimata in Story Points, la priorità MoSCoW e lo sprint di allocazione.
 
-\begin{longtable}{@{}p{1.4cm}p{4.2cm}p{1.4cm}p{1.2cm}p{1.2cm}p{1.2cm}p{2.8cm}@{}}
+\begingroup
+\small
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}
+  >{\centering\arraybackslash}p{1.0cm}
+  >{\RaggedRight\arraybackslash}p{4.5cm}
+  >{\centering\arraybackslash}p{1.2cm}
+  >{\centering\arraybackslash}p{1.2cm}
+  >{\centering\arraybackslash}p{1.1cm}
+  >{\centering\arraybackslash}p{1.8cm}
+  >{\RaggedRight\arraybackslash}p{3.2cm}@{}}
 \caption{Product Backlog completo del progetto TEPO.} \label{tab:product_backlog} \\
 \toprule
-\textbf{ID US} & \textbf{Titolo User Story} & \textbf{Epica} & \textbf{RF} & \textbf{SP} & \textbf{MoSCoW} & \textbf{Sprint / Stato} \\
+\makecell{\textbf{ID}\\\textbf{US}} & 
+\textbf{Titolo User Story} & 
+\textbf{Epica} & 
+\makecell{\textbf{Req.}\\\textbf{D1}} & 
+\makecell{\textbf{Story}\\\textbf{Pt}} & 
+\textbf{MoSCoW} & 
+\makecell{\textbf{Sprint e}\\\textbf{Stato}} \\
 \midrule
 \endfirsthead
 \multicolumn{7}{c}%
-{{\bfseries \tablename\ \thetable{} -- Continua dalla pagina precedente}} \\
+{{\bfseries \tablename\ \thetable{} -- Continua dalla pagina precedente}} \\[4pt]
 \toprule
-\textbf{ID US} & \textbf{Titolo User Story} & \textbf{Epica} & \textbf{RF} & \textbf{SP} & \textbf{MoSCoW} & \textbf{Sprint / Stato} \\
+\makecell{\textbf{ID}\\\textbf{US}} & 
+\textbf{Titolo User Story} & 
+\textbf{Epica} & 
+\makecell{\textbf{Req.}\\\textbf{D1}} & 
+\makecell{\textbf{Story}\\\textbf{Pt}} & 
+\textbf{MoSCoW} & 
+\makecell{\textbf{Sprint e}\\\textbf{Stato}} \\
 \midrule
 \endhead
 \midrule
-\multicolumn{7}{r}{{Continua nella pagina successiva...}} \\
+\multicolumn{7}{r}{\footnotesize\textit{Continua nella pagina successiva...}} \\
 \bottomrule
 \endfoot
 \bottomrule
@@ -80,8 +103,9 @@ La Tabella~\ref{tab:product_backlog} illustra il Product Backlog integrale di TE
 \textbf{US-13} & Accessibilita e Temi (Relazione/Sala) & EP-01 & RNF-01 & 5 & Should & Sprint 4 (Completata) \\
 \textbf{US-15} & Esportazione Relazione e Stampa & EP-04 & RNF-02 & 3 & Could & Sprint 4 (Completata) \\
 \midrule
-\textbf{Totale} & \textbf{15 User Story implementate} & & & \textbf{87 SP} & & \textbf{Velocita media: 21.75 SP} \\
+\textbf{Totale} & \multicolumn{3}{l}{\textbf{15 User Story}} & \textbf{87 SP} & \multicolumn{2}{r}{\textbf{Media: 21.75 SP / Sprint}} \\
 \end{longtable}
+\endgroup
 
 \subsection{Definition of Ready (DoR) e Definition of Done (DoD)}
 Per garantire il controllo di qualità metodologico lungo l'intero ciclo di sviluppo dello Specification-Driven Development, sono stati formalizzati e rigorosamente applicati due guardrail operativi:

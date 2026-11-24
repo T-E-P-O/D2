@@ -24,6 +24,10 @@
 \usepackage{float}
 \usepackage{listings}
 \usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{makecell}
+\usepackage{ragged2e}
+\usepackage{xurl}
 \usepackage{pdflscape}
 \usepackage{fancyhdr}
 \usepackage{refcount}
@@ -32,6 +36,11 @@
 
 % Colonna di tabella allineata a sinistra, senza giustificazione forzata.
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% Gestione avanzata margini e tolleranza per termini tecnici lunghi
+\emergencystretch=2.5em
+\tolerance=1500
+\hfuzz=1.5pt
 
 % --- CONFIGURAZIONE LISTINGS ---
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
