@@ -1,0 +1,515 @@
+\section{Processo di Sviluppo Incrementale organizzato in Sprint}
+\label{sec:processo_sviluppo_sprint}
+
+\subsection{Panoramica del Ciclo di Sviluppo Iterativo}
+In aderenza alla metodologia dello \emph{Specification-Driven Development} (SDD), lo sviluppo di TEPO si è articolato in quattro sprint di durata bisettimanale. Ciascun ciclo ha trasformato una porzione del Product Backlog in codice sorgente collaudato, documentando contestualmente l'evoluzione dell'architettura logica e della struttura delle classi.
+La Figura~\ref{fig:roadmap_sprint} riassume la traiettoria temporale e i deliverable di incremento prodotti dal team.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.95,
+        node distance=0.6cm and 0.8cm,
+        sprintbox/.style={draw=tepoblue, fill=tepoblue!8, rounded corners=4pt, thick, minimum width=3.4cm, minimum height=3.6cm, align=left, font=\scriptsize},
+        titlebox/.style={fill=tepoblue!25, draw=tepoblue, rounded corners=2pt, font=\small\bfseries, align=center, minimum width=3.2cm, minimum height=0.6cm},
+        arrow/.style={-Latex, very thick, draw=tepoblue!80}
+    ]
+        % Sprint 1
+        \node[sprintbox] (s1) at (0,0) {
+            \\[0.5cm]
+            \textbf{Focus:} Dominio e Shell\\
+            $\bullet$ US-01: Catalogo Edifici\\
+            $\bullet$ US-02: Catalogo Interventi\\
+            $\bullet$ US-08: Mappa Leaflet\\
+            $\bullet$ US-09: Dashboard\\
+            \textbf{Incremento:} Schema V1,\\
+            Entity JPA, Shell React\\
+            \textbf{SP Completati:} 16
+        };
+        \node[titlebox] at (s1.north) {Sprint 1: Fondamenta};
+
+        % Sprint 2
+        \node[sprintbox, right=0.7cm of s1] (s2) {
+            \\[0.5cm]
+            \textbf{Focus:} Ottimizzazione\\
+            $\bullet$ US-03: Scenario Builder\\
+            $\bullet$ US-04: Solver CP-SAT\\
+            $\bullet$ US-05: Spiegazioni\\
+            $\bullet$ US-14: Audit Trail \& Hash\\
+            \textbf{Incremento:} Core OR-Tools,\\
+            Schema V2, Result View\\
+            \textbf{SP Completati:} 34
+        };
+        \node[titlebox] at (s2.north) {Sprint 2: Algoritmo};
+
+        % Sprint 3
+        \node[sprintbox, right=0.7cm of s2] (s3) {
+            \\[0.5cm]
+            \textbf{Focus:} Analisi e Dati\\
+            $\bullet$ US-06: Confronto A/B\\
+            $\bullet$ US-07: Sensibilita Budget\\
+            $\bullet$ US-10: Import CSV Atomico\\
+            \textbf{Incremento:} Sensitivity\\
+            Engine, Compare View\\
+            \textbf{SP Completati:} 21
+        };
+        \node[titlebox] at (s3.north) {Sprint 3: What-If};
+
+        % Sprint 4
+        \node[sprintbox, right=0.7cm of s3] (s4) {
+            \\[0.5cm]
+            \textbf{Focus:} AI e Rilascio\\
+            $\bullet$ US-11: Assistente AI\\
+            $\bullet$ US-12: Rule Fallback\\
+            $\bullet$ US-13: Accessibilita \& Temi\\
+            $\bullet$ US-15: Export Relazione\\
+            \textbf{Incremento:} AI Hybrid,\\
+            Docker \& Cloud Render\\
+            \textbf{SP Completati:} 16
+        };
+        \node[titlebox] at (s4.north) {Sprint 4: Rilascio};
+
+        % Flow arrows
+        \draw[arrow] (s1) -- (s2);
+        \draw[arrow] (s2) -- (s3);
+        \draw[arrow] (s3) -- (s4);
+    \end{tikzpicture}
+    \caption{Roadmap dei quattro sprint di sviluppo di TEPO.}
+    \label{fig:roadmap_sprint}
+\end{figure}
+
+% -------------------------------------------------------------
+% SPRINT 1
+% -------------------------------------------------------------
+\subsection{Sprint 1: Fondamenta di Dominio, Catalogo, Cartografia e Shell}
+
+\subsubsection{Obiettivo dello Sprint e User Story Affrontate}
+L'obiettivo primario dello Sprint 1 è stato l'allestimento dell'infrastruttura fondamentale del progetto, stabilendo il modello dei dati relazionale, popolando il dataset dimostrativo sintetico e sviluppando la shell applicativa con le funzionalità di navigazione, esplorazione tabellare e cartografica.
+Le User Story completate sono:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{US-01 (Catalogo degli Edifici):} Visualizzazione tabellare interattiva dei 100 edifici comunali, con metriche di superficie, consumi annui kWh, spesa energetica in \euro{} e indicazione esplicita della provenienza sintetica (`SYNTHETIC`).
+    \item \textbf{US-02 (Catalogo Interventi e Tipologie):} Esplorazione delle 300 opzioni di intervento suddivise per le 6 tipologie (Caldaie, Pompe di Calore, Isolamento, Serramenti, Fotovoltaico, Illuminazione LED), con relativi costi e benefici nominali.
+    \item \textbf{US-08 (Cartografia Georeferenziata Leaflet):} Mappa interattiva del territorio di Trento, posizionamento degli edifici tramite coordinate geografiche (latitudine/longitudine) e popup informativo con riepilogo prestazionale.
+    \item \textbf{US-09 (Dashboard di Controllo e Navigazione):} Shell unificata con navigazione laterale (`SideNav`), riepilogo sintetico del patrimonio edilizio e badge permanente per la dichiarazione di conformità demo.
+\end{itemize}
+
+\subsubsection{Piano di Implementazione Tecnico}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Database:} Creazione della migrazione Flyway iniziale \texttt{V1\_\_init.sql}, con definizione delle tabelle \texttt{buildings}, \texttt{intervention\_types} e \texttt{intervention\_options}, vincoli di chiave primaria, chiave esterna e indice \texttt{idx\_options\_building}.
+    \item \textbf{Backend:} Implementazione del package \texttt{it.unitn.tepo.domain} con le classi entità \texttt{Building}, \texttt{InterventionOption}, \texttt{InterventionType} e l'enumerazione \texttt{DataProvenance}. Realizzazione dei repository Spring Data JPA (\texttt{BuildingRepository}, \texttt{InterventionOptionRepository}, \texttt{InterventionTypeRepository}) e dei controller REST di consultazione (\texttt{BuildingController}, \texttt{InterventionController}, \texttt{MapController}).
+    \item \textbf{Frontend:} Allestimento dell'ambiente Vite con TypeScript; sviluppo dei componenti di layout \texttt{AppShell}, \texttt{SideNav}, \texttt{StatusBand}; integrazione della libreria cartografica Leaflet con styling ad alto contrasto; realizzazione delle pagine \texttt{Dashboard.tsx}, \texttt{BuildingsPage.tsx}, \texttt{InterventionsPage.tsx} e \texttt{MapPage.tsx}.
+\end{itemize}
+
+\subsubsection{Evoluzione Architetturale dello Sprint 1}
+La Figura~\ref{fig:cmp_sprint1} illustra il diagramma dei componenti dello Sprint 1, evidenziando la separazione tra il livello di presentazione React, i controller REST di lettura e il database relazionale.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.9cm and 1.2cm,
+        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.4cm},
+        db/.style={cylinder, draw=black!80, fill=yellow!15, thick, shape border rotate=90, aspect=0.25, minimum width=2.4cm, minimum height=1.1cm, align=center, font=\scriptsize\bfseries},
+        box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=7pt},
+        arrow/.style={-Latex, thick, draw=black!80}
+    ]
+        % Client Box
+        \node[comp] (ui_shell) {AppShell / SideNav};
+        \node[comp, right=0.6cm of ui_shell] (ui_views) {Dashboard / MapPage /\\BuildingsPage / InterventionsPage};
+        \node[comp, below=0.6cm of ui_shell] (ui_api) {ApiClient (TypeScript)};
+        \begin{scope}[on background layer]
+            \node[box, fit=(ui_shell) (ui_views) (ui_api), label=above:{\scriptsize\textbf{Frontend SPA (React 18 / Vite)}}] (box_fe) {};
+        \end{scope}
+
+        % Backend Box
+        \node[comp, below=1.2cm of ui_api] (ctrl) {BuildingController /\\InterventionController / MapController};
+        \node[comp, right=0.8cm of ctrl] (repos) {BuildingRepository /\\InterventionOptionRepository};
+        \begin{scope}[on background layer]
+            \node[box, fit=(ctrl) (repos), label=above:{\scriptsize\textbf{Backend Services (Spring Boot 3.3)}}] (box_be) {};
+        \end{scope}
+
+        % Database
+        \node[db, below=1cm of repos] (db_node) {PostgreSQL 16\\(Flyway V1)};
+
+        % Connectors
+        \draw[arrow] (ui_views) -- (ui_api);
+        \draw[arrow] (ui_api) -- node[right, font=\tiny] {REST / JSON} (ctrl);
+        \draw[arrow] (ctrl) -- (repos);
+        \draw[arrow] (repos) -- node[right, font=\tiny] {JDBC / SQL} (db_node);
+    \end{tikzpicture}
+    \caption{Component Diagram allo stato dello Sprint 1.}
+    \label{fig:cmp_sprint1}
+\end{figure}
+
+La struttura delle classi del modello di dominio introdotta nello Sprint 1 è delineata nella Figura~\ref{fig:class_sprint1}.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm and 1cm,
+        classbox/.style={draw=black!80, fill=white, thick, rectangle split, rectangle split parts=3, rounded corners=2pt, align=left, font=\scriptsize, inner sep=4pt}
+    ]
+        % Building
+        \node[classbox] (building) {
+            \textbf{Building}
+            \nodepart{second}
+            - id: String\\
+            - name: String\\
+            - address: String\\
+            - latitude: Double\\
+            - longitude: Double\\
+            - surfaceM2: Double\\
+            - annualEnergyConsumptionKwh: Double\\
+            - annualEnergyCostEur: Double\\
+            - annualCo2Kg: Double\\
+            - provenance: DataProvenance
+            \nodepart{third}
+            + getId(): String\\
+            + getName(): String
+        };
+
+        % InterventionOption
+        \node[classbox, right=1.2cm of building] (option) {
+            \textbf{InterventionOption}
+            \nodepart{second}
+            - id: String\\
+            - buildingId: String\\
+            - interventionTypeId: String\\
+            - name: String\\
+            - investmentCostCents: long\\
+            - annualEnergySavingScaled: long\\
+            - annualEconomicSavingCents: long\\
+            - annualCo2ReductionScaled: long\\
+            - provenance: DataProvenance
+            \nodepart{third}
+            + getId(): String\\
+            + getInvestmentCostCents(): long
+        };
+
+        % InterventionType
+        \node[classbox, below=1cm of option] (type) {
+            \textbf{InterventionType}
+            \nodepart{second}
+            - id: String\\
+            - name: String\\
+            - category: String\\
+            - description: String
+            \nodepart{third}
+            + getId(): String\\
+            + getName(): String
+        };
+
+        % Connectors
+        \draw[-Latex, thick] (option.west) -- node[above, font=\tiny] {1..* appartiene a} (building.east);
+        \draw[-Latex, thick] (option.south) -- node[right, font=\tiny] {1..* tipologia} (type.north);
+    \end{tikzpicture}
+    \caption{Class Diagram del dominio introdotto nello Sprint 1.}
+    \label{fig:class_sprint1}
+\end{figure}
+
+\subsubsection{Test Effettuati ed Evidenze di Collaudo}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Test di Coerenza del Dataset (\texttt{DemoDatasetCoherenceTest}):} Verifica automatica sul dataset caricato da \texttt{DemoDataLoader}: assenza di valori nulli su campi obbligatori, correttezza dei vincoli di unicità degli identificativi e corrispondenza referenziale degli edifici (100 edifici, 300 interventi, 6 tipologie caricate con successo).
+    \item \textbf{Test di Integrazione Controller REST:} Verifica delle risposte HTTP 200 su \texttt{/api/buildings}, \texttt{/api/interventions} e \texttt{/api/map/buildings}.
+    \item \textbf{Test Frontend Vitest:} Collaudo del rendering della shell e delle viste catalogo (\texttt{BuildingsPage.test.tsx}, \texttt{InterventionsPage.test.tsx}, \texttt{MapPage.test.tsx}).
+\end{itemize}
+
+\subsubsection{Retrospettiva dello Sprint 1}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Cosa ha funzionato:} La configurazione di Flyway e Spring Data JPA ha consentito un bootstrap immediato e riproducibile della persistenza. L'integrazione di Leaflet su coordinate reali del Comune di Trento ha reso immediatamente tangibile il valore della visualizzazione cartografica.
+    \item \textbf{Criticità riscontrate:} I tile cartografici standard di fornitori terzi applicavano watermark invasivi e presentavano problemi di resa in modalità scura; la criticità è stata superata adottando i tile OpenStreetMap filtrati mediante token CSS nativi.
+    \item \textbf{Azioni di miglioramento per lo sprint successivo:} Formalizzare la gestione dei valori economici in centesimi di euro (\texttt{long}) per prevenire imprecisioni di arrotondamento a virgola mobile durante l'ottimizzazione matematica.
+\end{itemize}
+
+% -------------------------------------------------------------
+% SPRINT 2
+% -------------------------------------------------------------
+\subsection{Sprint 2: Core di Ottimizzazione Esatta CP-SAT, Vincoli e Spiegazioni}
+
+\subsubsection{Obiettivo dello Sprint e User Story Affrontate}
+Lo Sprint 2 ha realizzato il nucleo matematico ed euristico di TEPO, introducendo il solutore esatto di programmazione a vincoli, la gestione dei vincoli logici booleani e il generatore di spiegazioni deterministiche:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{US-03 (Configurazione Guidata Scenario):} Creazione guidata dello scenario con assegnazione del budget, scelta dell'obiettivo prioritario e applicazione di vincoli tecnici (incompatibilità tra interventi, prerequisiti tecnologici e numero massimo di interventi per tipologia).
+    \item \textbf{US-04 (Risoluzione Portafoglio Ottimo con OR-Tools CP-SAT):} Calcolo deterministico della combinazione ottima di interventi mediante programmazione matematica esatta con tie-break canonico a 4 passi.
+    \item \textbf{US-05 (Motore di Spiegazione Deterministico):} Produzione di motivazioni formalizzate per ogni intervento (incluso o escluso), evidenziando barriere locali di budget o incompatibilità con gli interventi selezionati.
+    \item \textbf{US-14 (Audit Trail e Hash Canonico del Problema):} Calcolo dell'hash SHA-256 canonico dello scenario e registrazione persistente dell'esecuzione dell'ottimizzazione per futura ricostruibilità amministrativa.
+\end{itemize}
+
+\subsubsection{Piano di Implementazione Tecnico}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Database:} Creazione della migrazione Flyway \texttt{V2\_\_optimization\_runs.sql}, introducendo la tabella \texttt{optimization\_runs} per memorizzare le soluzioni ottime, il problem hash crittografico, i reason code e i tempi di computazione.
+    \item \textbf{Backend:} Integrazione dei binari nativi Google OR-Tools 9.11 tramite JNI. Implementazione del solutore esatto \texttt{OrToolsSolver} che traduce il problema in variabili decisionali binarie $x_i \in \{0, 1\}$. Implementazione della procedura di tie-break a 4 passi:
+    \begin{enumerate}[label=\alph*), itemsep=0.1em]
+        \item Massimizzazione dell'obiettivo primario $Z_1 = \sum_{i} w_i x_i$ con vincolo $\sum_i c_i x_i \le B$;
+        \item Con $Z_1$ vincolato al valore ottimo $Z_1^*$, minimizzazione dell'investimento totale $Z_2 = \sum_i c_i x_i$;
+        \item Con $Z_1^*$ e $Z_2^*$ vincolati, minimizzazione del numero totale di interventi realizzati $Z_3 = \sum_i x_i$;
+        \item Spareggio lessicografico rigoroso sugli identificativi univoci delle opzioni candidate.
+    \end{enumerate}
+    Sviluppo del modulo \texttt{ExplanationService} per la verifica delle barriere locali di saturazione e del \texttt{ProblemHasher} per la generazione di hash canonici deterministici.
+    \item \textbf{Frontend:} Realizzazione della vista di composizione scenario \texttt{ScenarioBuilder.tsx} e della schermata di dettaglio esiti \texttt{ResultPage.tsx}, completa di cruscotto KPI, prospetto di allocazione del budget ed esploratore motivazioni.
+\end{itemize}
+
+\subsubsection{Evoluzione Architetturale dello Sprint 2}
+La Figura~\ref{fig:cmp_sprint2} illustra l'integrazione del motore di ottimizzazione nativo e del servizio di spiegazione all'interno dell'Application Layer.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm and 1cm,
+        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.2cm},
+        solvercomp/.style={draw=orange!80, fill=orange!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.4cm},
+        db/.style={cylinder, draw=black!80, fill=yellow!15, thick, shape border rotate=90, aspect=0.25, minimum width=2.4cm, minimum height=1.1cm, align=center, font=\scriptsize\bfseries},
+        box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=7pt},
+        arrow/.style={-Latex, thick, draw=black!80}
+    ]
+        % Frontend
+        \node[comp] (views2) {ScenarioBuilder /\\ResultPage};
+        \node[comp, right=0.8cm of views2] (api2) {ApiClient};
+        \begin{scope}[on background layer]
+            \node[box, fit=(views2) (api2), label=above:{\scriptsize\textbf{Frontend SPA}}] (b_fe2) {};
+        \end{scope}
+
+        % Backend
+        \node[comp, below=1cm of views2] (ctrl2) {ScenarioController};
+        \node[comp, right=0.8cm of ctrl2] (serv2) {OptimizationService};
+        \node[comp, below=0.7cm of serv2] (hasher) {ProblemHasher};
+        \node[comp, left=0.7cm of hasher] (expl) {ExplanationService};
+        \node[solvercomp, below=0.7cm of hasher] (solver) {OrToolsSolver\\(C++ Engine via JNI)};
+        \begin{scope}[on background layer]
+            \node[box, fit=(ctrl2) (serv2) (hasher) (expl) (solver), label=above:{\scriptsize\textbf{Backend Application \& Solver}}] (b_be2) {};
+        \end{scope}
+
+        % DB
+        \node[db, below=1cm of expl] (db2) {PostgreSQL 16\\(Flyway V1 + V2)};
+
+        % Connectors
+        \draw[arrow] (views2) -- (api2);
+        \draw[arrow] (api2) |- (ctrl2);
+        \draw[arrow] (ctrl2) -- (serv2);
+        \draw[arrow] (serv2) -- (hasher);
+        \draw[arrow] (serv2) -- (solver);
+        \draw[arrow] (serv2) -- (expl);
+        \draw[arrow] (serv2) |- (db2);
+    \end{tikzpicture}
+    \caption{Component Diagram allo stato dello Sprint 2.}
+    \label{fig:cmp_sprint2}
+\end{figure}
+
+Il raffinamento del Class Diagram con l'introduzione delle strutture matematiche e dei contratti di risoluzione è illustrato in Figura~\ref{fig:class_sprint2}.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm and 1cm,
+        classbox/.style={draw=black!80, fill=white, thick, rectangle split, rectangle split parts=3, rounded corners=2pt, align=left, font=\scriptsize, inner sep=4pt}
+    ]
+        % OptimizationProblem
+        \node[classbox] (prob) {
+            \textbf{OptimizationProblem}
+            \nodepart{second}
+            - scenarioId: String\\
+            - budgetCents: long\\
+            - objective: Objective\\
+            - candidateOptions: List<CandidateOption>\\
+            - constraints: List<ScenarioConstraint>
+            \nodepart{third}
+            + candidateOptions(): List<CandidateOption>\\
+            + budgetCents(): long
+        };
+
+        % OptimizationResult
+        \node[classbox, right=1.2cm of prob] (res) {
+            \textbf{OptimizationResult}
+            \nodepart{second}
+            - runId: String\\
+            - status: SolverStatus\\
+            - totalInvestmentCents: long\\
+            - objectiveValue: long\\
+            - selectedOptionIds: List<String>\\
+            - explanations: List<Explanation>\\
+            - problemHash: String
+            \nodepart{third}
+            + isOptimal(): boolean\\
+            + selectedOptionIds(): List<String>
+        };
+
+        % Solver Interface & Impl
+        \node[classbox, below=1cm of prob] (solver_int) {
+            \textbf{<<interface>> OptimizationSolver}
+            \nodepart{second}
+            \nodepart{third}
+            + solve(p: OptimizationProblem): OptimizationResult
+        };
+
+        \node[classbox, below=0.6cm of solver_int] (ortools) {
+            \textbf{OrToolsSolver}
+            \nodepart{second}
+            - solverConfiguration: SolverConfiguration
+            \nodepart{third}
+            + solvePrimary(...): StepResult\\
+            + solveMinCost(...): StepResult\\
+            + solveMinCount(...): StepResult\\
+            + solveLexicographic(...): List<String>
+        };
+
+        % Connectors
+        \draw[-Latex, thick] (solver_int) -- (prob);
+        \draw[-Latex, thick] (solver_int) -- (res);
+        \draw[-Latex, dashed, thick] (ortools) -- (solver_int);
+    \end{tikzpicture}
+    \caption{Class Diagram del modulo di ottimizzazione (Sprint 2).}
+    \label{fig:class_sprint2}
+\end{figure}
+
+\subsubsection{Test Effettuati ed Evidenze di Collaudo}
+Lo Sprint 2 è stato convalidato da una vasta suite di test algoritmici mirati:
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Test di Parità Solutore (\texttt{SolverParityTest}, \texttt{SolverRandomizedParityTest}):} Verifica comparativa tra \texttt{OrToolsSolver} e un risolutore esaustivo brute-force (\texttt{BruteForceSolver}) su 100 istanze generate casualmente. L'uguaglianza rigorosa della funzione obiettivo e delle selezioni ha raggiunto il 100\% di conformità.
+    \item \textbf{Test di Confronto Baseline Greedy (\texttt{GreedyBaselineComparisonTest}):} Dimostrazione analitica della superiorità del solver esatto rispetto all'algoritmo ingoloso euristico, con scarti fino al 18\% su istanze con vincoli di incompatibilità.
+    \item \textbf{Test di Regressione Tie-Break (\texttt{OrToolsSolverRegressionTest}):} Verifica dell'indipendenza dell'output rispetto alla permutazione dell'ordine dei dati di input.
+    \item \textbf{Test di Spiegazione (\texttt{ExplanationReasonCodeTest}):} Validazione dell'assegnazione corretta dei codici di esclusione (\texttt{EXCLUDED\_BUDGET\_BARRIER}, \texttt{EXCLUDED\_INCOMPATIBILITY}, ecc.).
+\end{itemize}
+
+\subsubsection{Retrospettiva dello Sprint 2}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Cosa ha funzionato:} Le prestazioni di Google OR-Tools si sono rivelate straordinarie: problemi a 300 variabili binarie con vincoli logici multipli vengono risolti all'ottimo globale in meno di 150 millisecondi.
+    \item \textbf{Criticità riscontrate:} La procedura di spareggio lessicografico necessitava della ricostruzione atomica del modello CP-SAT ad ogni fissaggio di variabile binaria per evitare lo stallo dei vincoli interni di OR-Tools.
+    \item \textbf{Azioni di miglioramento per lo sprint successivo:} Fornire un supporto strutturato al confronto visuale affiancato di scenari per consentire ai decisori di valutare l'impatto di variazioni di budget.
+\end{itemize}
+
+% -------------------------------------------------------------
+% SPRINT 3
+% -------------------------------------------------------------
+\subsection{Sprint 3: Analisi What-If, Sensibilità sul Budget e Importazione CSV}
+
+\subsubsection{Obiettivo dello Sprint e User Story Affrontate}
+Lo Sprint 3 ha introdotto gli strumenti decisionali di livello avanzato per l'esplorazione parametrica della stabilità delle soluzioni e l'ingestione controllata di nuovi dati:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{US-06 (Confronto Scenari What-If A/B):} Memorizzazione di due configurazioni decisionali distinte in slot di sessione denominati ``Slot A'' e ``Slot B'', con analisi differenziale affiancata e calcolo automatico dei delta ($\Delta = \text{B} - \text{A}$) su spesa, risparmio kWh, risparmio economico ed emissioni di CO\textsubscript{2}.
+    \item \textbf{US-07 (Analisi di Sensibilità sul Budget):} Esecuzione di uno sweep parametrico deterministico variando il budget lungo una griglia uniforme configurabile da 3 a 51 punti, classificando gli interventi in \emph{stabili} (sempre inclusi o sempre esclusi) oppure \emph{instabili/oscillanti}.
+    \item \textbf{US-10 (Importazione Guidata Dati da CSV):} Procedura di caricamento in tre fasi (upload e parsing tollerante, validazione a secco atomica con rilevazione errori e commit transazionale).
+\end{itemize}
+
+\subsubsection{Piano di Implementazione Tecnico}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Backend:} Implementazione del servizio \texttt{SensitivityService} per l'orchestrazione dello sweep lineare sul budget con invocazione sequenziale del solver e generazione delle matrici di frequenza di inclusione. Sviluppo del modulo \texttt{ImportController} dotato di parser CSV tollerante (gestione automatica di separatori virgola/punto e virgola, apici e codifiche UTF-8/ISO-8859) e meccanismo di rollback completo in caso di violazione dell'integrità referenziale.
+    \item \textbf{Frontend:} Sviluppo dello store client di sessione \texttt{scenarioStore.ts} in LocalStorage; creazione delle viste operative \texttt{ComparePage.tsx} (tabelle comparative con delta cromatici), \texttt{SensitivityPage.tsx} (grafici SVG nativi per curve di efficienza e heatmap di stabilità) e \texttt{ImportPage.tsx} (wizard con anteprima errori riga per riga e statistiche di caricamento).
+\end{itemize}
+
+\subsubsection{Evoluzione Architetturale dello Sprint 3}
+La Figura~\ref{fig:cmp_sprint3} illustra l'inclusione dei sottosistemi di sensibilità parametrica e di ingestione dei dati esterni.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm and 1cm,
+        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.2cm},
+        servcomp/.style={draw=tepogreen!80, fill=tepogreen!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.4cm},
+        box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=7pt},
+        arrow/.style={-Latex, thick, draw=black!80}
+    ]
+        % Frontend
+        \node[comp] (views3) {ComparePage / SensitivityPage /\\ImportPage};
+        \node[comp, right=0.8cm of views3] (store) {scenarioStore (Client A/B)};
+        \begin{scope}[on background layer]
+            \node[box, fit=(views3) (store), label=above:{\scriptsize\textbf{Frontend State \& Views (Sprint 3)}}] (b_fe3) {};
+        \end{scope}
+
+        % Backend
+        \node[comp, below=1cm of views3] (ctrl3) {SensitivityController /\\ImportController};
+        \node[servcomp, below=0.8cm of ctrl3] (sens_serv) {SensitivityService\\(Budget Sweep Engine)};
+        \node[servcomp, right=0.8cm of sens_serv] (opt_serv) {OptimizationService};
+        \begin{scope}[on background layer]
+            \node[box, fit=(ctrl3) (sens_serv) (opt_serv), label=above:{\scriptsize\textbf{Backend Application Layer}}] (b_be3) {};
+        \end{scope}
+
+        % Connectors
+        \draw[arrow] (views3) -- (store);
+        \draw[arrow] (store) |- (ctrl3);
+        \draw[arrow] (ctrl3) -- (sens_serv);
+        \draw[arrow] (sens_serv) -- (opt_serv);
+    \end{tikzpicture}
+    \caption{Component Diagram allo stato dello Sprint 3.}
+    \label{fig:cmp_sprint3}
+\end{figure}
+
+\subsubsection{Test Effettuati ed Evidenze di Collaudo}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Test Sweep di Sensibilità (\texttt{SensitivityServiceTest}):} Verifica della correttezza della griglia di campionamento (punti equidistanti tra budget minimo e massimo), monotonicità non decrescente del valore obiettivo e corretta ripartizione degli interventi in categorie di stabilità.
+    \item \textbf{Test Importazione CSV (\texttt{ImportControllerTest}):} Collaudo della validazione atomica: rigetto di file con colonne mancanti, righe con identificativi duplicati o chiavi esterne inesistenti senza alcuna persistenza sul database; accettazione e caricamento con rollback opzionale tramite l'endpoint \texttt{/api/import/reset-demo}.
+    \item \textbf{Test Frontend Vitest:} Verifica dell'interazione nelle pagine \texttt{ComparePage.test.tsx}, \texttt{SensitivityPage.test.tsx} e \texttt{ImportPage.test.tsx}.
+\end{itemize}
+
+\subsubsection{Retrospettiva dello Sprint 3}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Cosa ha funzionato:} Lo store di sessione client ha disaccoppiato la gestione degli slot A/B dal backend, consentendo all'utente di alternare, scambiare e confrontare configurazioni decisionali con latenza zero.
+    \item \textbf{Criticità riscontrate:} L'esecuzione dello sweep su 51 punti di budget generava un carico temporaneo significativo se eseguita senza vincoli di timeout; è stato introdotto un limite massimo configurabile sul tempo di risoluzione per singolo punto.
+    \item \textbf{Azioni di miglioramento per lo sprint successivo:} Completare l'assistente AI con architettura di fallback resiliente e perfezionare l'accessibilità visiva e l'infrastruttura di rilascio in cloud.
+\end{itemize}
+
+% -------------------------------------------------------------
+% SPRINT 4
+% -------------------------------------------------------------
+\subsection{Sprint 4: Assistente AI Sovrintendente, Polishing e Rilascio Cloud}
+
+\subsubsection{Obiettivo dello Sprint e User Story Affrontate}
+L'ultimo sprint ha integrato il modulo di intelligenza artificiale opzionale secondo i canoni della piena responsabilità umana, perfezionando l'accessibilità del sistema e finalizzando la pipeline di deployment automatizzato:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{US-11 (Assistente AI Human-in-the-Loop):} Modulo di interpretazione delle richieste in linguaggio naturale dell'operatore tecnico (es. ``Massimizza il risparmio per le scuole con un budget di 500.000 euro'') per proporre parametri di scenario strutturati senza alcuna scrittura diretta sui dati.
+    \item \textbf{US-12 (Fallback Rule-Based Locale Deterministico):} Meccanismo di failover trasparente che, in assenza di connessione o in mancanza di chiavi API per il provider LLM esterno, elabora la richiesta mediante un motore a regole euristico locale, segnalando lo stato all'utente.
+    \item \textbf{US-13 (Accessibilità WCAG 2.1 AA e Doppio Registro Visivo):} Pieno supporto per ipovedenti, contrasto elevato, navigabilità integrale da tastiera e supporto a due temi operativi (\emph{Relazione} per lettura/proiezione diurna e \emph{Sala Operativa} per sessioni analitiche prolungate).
+    \item \textbf{US-15 (Esportazione e Stampa della Relazione Tecnica):} Foglio di stile CSS per la stampa che consente di generare un report documentale pulito e stampabile degli esiti decisionali.
+\end{itemize}
+
+\subsubsection{Piano di Implementazione Tecnico}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Backend:} Implementazione dell'interfaccia \texttt{AiAssistant} e delle due classi concrete \texttt{LlmAiAssistant} (integrazione modello linguistico esterno con formattazione JSON controllata) e \texttt{RuleBasedAiAssistant} (motore deterministico basato su espressioni regolari e corrispondenza tassonomica). Implementazione di \texttt{AiController} per esporre lo stato operativo (\texttt{/api/ai/status}) e la generazione delle proposte (\texttt{/api/ai/propose-scenario}). Sviluppo del componente \texttt{DatabaseUrlEnvironmentPostProcessor} per la risoluzione trasparente delle variabili di connessione del cloud provider Render.
+    \item \textbf{Frontend:} Realizzazione del pannello estensibile \texttt{AiAssistantPanel.tsx} nello Scenario Builder; introduzione della tavolozza comandi rapida \texttt{CommandPalette.tsx} (\texttt{Ctrl+K}); ottimizzazione del bundle statico per Nginx e stili di stampa (@media print).
+    \item \textbf{Deployment \& Cloud:} Configurazione del blueprint Infrastructure-as-Code \texttt{render.yaml}, validazione dei container multi-stage Docker e collaudo dell'ambiente pubblico su \url{https://tepo.onrender.com}.
+\end{itemize}
+
+\subsubsection{Evoluzione Architetturale dello Sprint 4}
+La Figura~\ref{fig:cmp_sprint4} illustra l'architettura integrata completata dello Sprint 4, evidenziando il sottosistema AI ibrido e l'integrazione di deployment cloud.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm and 1cm,
+        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3cm},
+        aicomp/.style={draw=purple!80, fill=purple!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.2cm},
+        cloudcomp/.style={draw=tepogreen!80, fill=tepogreen!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.4cm},
+        box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=6pt},
+        arrow/.style={-Latex, thick, draw=black!80}
+    ]
+        % Frontend
+        \node[comp] (ui_s4) {React 18 SPA\\(AiAssistantPanel + Shell)};
+        \node[comp, right=0.8cm of ui_s4] (nginx_s4) {Nginx Reverse Proxy\\(Docker Web Service)};
+
+        % Backend
+        \node[comp, below=1cm of ui_s4] (api_s4) {Spring Boot 3.3\\(REST Controllers)};
+        \node[aicomp, below=0.8cm of api_s4] (ai_engine) {AiAssistant Subsystem\\(LLM Client + Rule Fallback)};
+        \node[cloudcomp, right=0.8cm of api_s4] (cloud_s4) {Render PaaS Cloud\\(PostgreSQL + Auto Deploy)};
+
+        % Connectors
+        \draw[arrow] (ui_s4) -- (nginx_s4);
+        \draw[arrow] (nginx_s4) |- (api_s4);
+        \draw[arrow] (api_s4) -- (ai_engine);
+        \draw[arrow] (api_s4) -- (cloud_s4);
+    \end{tikzpicture}
+    \caption{Component Diagram integrato allo stato dello Sprint 4.}
+    \label{fig:cmp_sprint4}
+\end{figure}
+
+\subsubsection{Test Effettuati ed Evidenze di Collaudo}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Test Assistente AI (\texttt{LlmAiAssistantTest}, \texttt{RuleBasedAiAssistantTest}):} Verifica della resilienza del fallback rule-based a fronte di timeout del provider esterno o chiavi non configurate; conformità dello schema JSON restituito con i vincoli di dominio.
+    \item \textbf{Test di Configurazione Cloud (\texttt{DatabaseUrlEnvironmentPostProcessorTest}):} Verifica della corretta traduzione dell'URI standard `postgres://` fornito da Render nella stringa JDBC conforme `jdbc:postgresql://` con disattivazione forzata di credenziali concorrenti.
+    \item \textbf{Collaudo di Accessibilità WCAG 2.1 AA:} Verifica dei rapporti di contrasto cromatico ($> 4.5:1$ per testo normale, $> 3:1$ per componenti grafici) sia nel tema Relazione che nel tema Sala Operativa.
+    \item \textbf{Collaudo Live in Cloud:} Esecuzione end-to-end dello scenario di test sull'istanza di produzione ospitata su Render con superamento di tutti i controlli di salute (\texttt{healthcheck} HTTP 200 su \texttt{/api/scenarios/ping}).
+\end{itemize}
+
+\subsubsection{Retrospettiva dello Sprint 4}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Cosa ha funzionato:} La separazione netta tra LLM esterno e fallback a regole ha eliminato ogni punto singolo di fallimento, consentendo al sistema di operare fluidamente anche in totale assenza di connettività internet.
+    \item \textbf{Criticità riscontrate:} La modalità free-tier di Render pone il servizio in stato di sospensione dopo 15 minuti di inattività, provocando un avvio a freddo (cold start) di circa 30-45 secondi alla prima richiesta; la situazione è stata documentata nel manuale utente.
+    \item \textbf{Sintesi del rilascio finale:} Il team ha completato con successo il 100\% delle User Story pianificate (87 Story Points totali), raggiungendo una copertura di test automatici completa e rilasciando un prodotto stabile, verificabile e pienamente conforme alle specifiche.
+\end{itemize}
