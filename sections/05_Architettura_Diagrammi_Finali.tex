@@ -1,0 +1,440 @@
+\section{Architettura e Diagrammi Finali di Sistema}
+\label{sec:architettura_diagrammi_finali}
+
+\subsection{Component Diagram Finale di Sistema}
+In questa sezione viene formalizzata l'architettura logica integrata di TEPO giunta a maturazione al termine dei quattro sprint di sviluppo. Il sistema adotta un modello architetturale a strati ben disaccoppiati (Tiered Architecture), in cui ciascun livello espone e richiede interfacce esplicite, garantendo l'indipendenza delle componenti tecnologiche e la testabilità isolata di ogni singolo modulo.
+
+La Figura~\ref{fig:cmp_final} illustra il Component Diagram definitivo di TEPO, dettagliando la cooperazione tra il livello di presentazione client, il gateway di reverse proxy, i servizi applicativi di Spring Boot, il solutore matematico nativo OR-Tools, il sottosistema di intelligenza artificiale ibrido e il motore di persistenza PostgreSQL.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.88, every node/.style={transform shape},
+        node distance=0.8cm and 1cm,
+        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.3cm},
+        solvercomp/.style={draw=orange!80, fill=orange!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.3cm},
+        aicomp/.style={draw=purple!80, fill=purple!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.3cm},
+        db/.style={cylinder, draw=black!80, fill=yellow!15, thick, shape border rotate=90, aspect=0.25, minimum width=2.4cm, minimum height=1.1cm, align=center, font=\scriptsize\bfseries},
+        box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=6pt},
+        arrow/.style={-Latex, thick, draw=black!80}
+    ]
+        % Presentation Layer
+        \node[comp] (views) {9 Viste Operative\\(React SPA Pages)};
+        \node[comp, right=0.6cm of views] (shell) {Shell \& Components\\(SideNav, CommandPalette)};
+        \node[comp, right=0.6cm of shell] (store) {Client Store\\(A/B Session, Theme)};
+        \node[comp, below=0.6cm of shell] (apiclient) {ApiClient Tipizzato\\(Fetch JSON REST)};
+        \begin{scope}[on background layer]
+            \node[box, fit=(views) (shell) (store) (apiclient), label=above:{\small\textbf{Presentation Tier: Client Web SPA (React 18 / Vite / TypeScript)}}] (box_client) {};
+        \end{scope}
+
+        % Web Server Tier
+        \node[comp, fill=gray!15, below=1.2cm of apiclient, minimum width=8cm] (nginx) {
+            Nginx Reverse Proxy \& SPA Routing Engine\\
+            \scriptsize Gzip Compression $\cdot$ Asset Cache $\cdot$ Fallback index.html
+        };
+
+        % Application Tier
+        \node[comp, below left=1.2cm and -0.8cm of nginx] (ctrl_rest) {
+            REST Controllers Layer\\
+            \tiny ScenarioCtrl $\cdot$ SensitivityCtrl $\cdot$ ImportCtrl $\cdot$ BuildingCtrl $\cdot$ AiCtrl
+        };
+        \node[comp, right=0.6cm of ctrl_rest] (exc_h) {
+            Global Exception\\Handler (RFC 7807)
+        };
+        \node[comp, below=0.6cm of ctrl_rest] (app_serv) {
+            Application Services\\
+            \tiny OptimizationService $\cdot$ SensitivityService $\cdot$ DemoDataLoader
+        };
+        \node[comp, right=0.6cm of app_serv] (repos) {
+            Spring Data JPA Repositories\\
+            \tiny BuildingRepo $\cdot$ OptionRepo $\cdot$ RunRepo
+        };
+        \begin{scope}[on background layer]
+            \node[box, fit=(ctrl_rest) (exc_h) (app_serv) (repos), label=above:{\small\textbf{Application Tier: Spring Boot 3.3.4 (Java 21 LTS)}}] (box_backend) {};
+        \end{scope}
+
+        % Optimization Engine
+        \node[solvercomp, below left=1.2cm and -0.4cm of app_serv] (solver_core) {
+            Google OR-Tools CP-SAT\\
+            \tiny Native C++ via JNI $\cdot$ Lexicographic Tie-Break
+        };
+        \node[solvercomp, right=0.5cm of solver_core] (hasher_core) {
+            Problem Hasher \& Explanations\\
+            \tiny SHA-256 Canonical Hash $\cdot$ Local Barrier Engine
+        };
+        \begin{scope}[on background layer]
+            \node[box, draw=orange!60, fill=orange!3, fit=(solver_core) (hasher_core), label=above:{\small\textbf{Optimization \& Explanation Subsystem}}] (box_solver) {};
+        \end{scope}
+
+        % AI Subsystem
+        \node[aicomp, below right=1.2cm and -0.4cm of repos] (ai_mod) {
+            Hybrid AI Assistant Subsystem\\
+            \tiny LlmAiAssistant (JSON Prompt) $\cdot$ RuleBasedAiAssistant
+        };
+        \begin{scope}[on background layer]
+            \node[box, draw=purple!60, fill=purple!3, fit=(ai_mod), label=above:{\small\textbf{AI Assistant Subsystem}}] (box_ai) {};
+        \end{scope}
+
+        % Persistence Tier
+        \node[db, below=1.2cm of hasher_core, minimum width=10cm] (db_final) {
+            PostgreSQL 16 Relational Database Engine\\
+            \scriptsize Flyway Migrations (V1, V2) $\cdot$ Foreign Keys $\cdot$ Composite B-Tree Indexes $\cdot$ ACID Transactions
+        };
+
+        % Connectors
+        \draw[arrow] (apiclient) -- node[right, font=\tiny] {HTTPS} (nginx);
+        \draw[arrow] (nginx) -- node[right, font=\tiny] {Proxy pass :8080} (ctrl_rest);
+        \draw[arrow] (ctrl_rest) -- (app_serv);
+        \draw[arrow] (ctrl_rest) -- (exc_h);
+        \draw[arrow] (app_serv) -- (repos);
+        \draw[arrow] (app_serv) -- (solver_core);
+        \draw[arrow] (app_serv) -- (hasher_core);
+        \draw[arrow] (ctrl_rest) |- (ai_mod);
+        \draw[arrow] (repos) -- node[right, font=\tiny] {JDBC Pool} (db_final);
+    \end{tikzpicture}
+    \caption{Component Diagram finale del sistema TEPO.}
+    \label{fig:cmp_final}
+\end{figure}
+
+\subsection{Class Diagram Completo del Backend}
+La modellazione orientata agli oggetti del backend Spring Boot implementa un'architettura a strati con rigoroso incapsulamento e separazione tra entità di dominio persistenti, oggetti valore immutabili (\emph{records} di Java 21), interfacce di servizio e controller REST.
+
+La Figura~\ref{fig:class_final} illustra il diagramma delle classi consolidato, strutturato nei quattro package logici cardine:
+\begin{enumerate}[label=\alph*), itemsep=0.2em]
+    \item \textbf{Package Domain:} Comprende le entità di catalogo (\texttt{Building}, \texttt{InterventionOption}, \texttt{InterventionType}), l'enumerazione di provenienza (\texttt{DataProvenance}), l'obiettivo di ottimizzazione (\texttt{Objective}) e l'entità di audit (\texttt{OptimizationRun}).
+    \item \textbf{Package Optimization:} Definisce l'interfaccia \texttt{OptimizationSolver}, le classi di modellazione del problema (\texttt{OptimizationProblem}, \texttt{CandidateOption}, \texttt{ScenarioConstraint}), il solutore nativo \texttt{OrToolsSolver}, il calcolatore di hash canonico \texttt{ProblemHasher} e il generatore di motivazioni \texttt{ExplanationService}.
+    \item \textbf{Package Application:} Incapsula la logica transazionale di coordinamento nei servizi \texttt{OptimizationService} e \texttt{SensitivityService}, oltre alle interfacce di persistenza Spring Data JPA.
+    \item \textbf{Package AI:} Contiene l'interfaccia strategica \texttt{AiAssistant} con le implementazioni polimorfiche \texttt{LlmAiAssistant} e \texttt{RuleBasedAiAssistant}, unitamente al DTO \texttt{ScenarioProposal}.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.82, every node/.style={transform shape},
+        node distance=0.7cm and 0.8cm,
+        classbox/.style={draw=black!80, fill=white, thick, rectangle split, rectangle split parts=3, rounded corners=2pt, align=left, font=\scriptsize, inner sep=3pt}
+    ]
+        % Building
+        \node[classbox] (b_class) {
+            \textbf{Building}
+            \nodepart{second}
+            - id: String (PK)\\
+            - name: String\\
+            - address: String\\
+            - latitude: Double\\
+            - longitude: Double\\
+            - surfaceM2: Double\\
+            - annualEnergyConsumptionKwh: Double\\
+            - annualEnergyCostEur: Double\\
+            - annualCo2Kg: Double\\
+            - provenance: DataProvenance
+            \nodepart{third}
+            + getId(): String\\
+            + getProvenance(): DataProvenance
+        };
+
+        % InterventionOption
+        \node[classbox, right=0.8cm of b_class] (opt_class) {
+            \textbf{InterventionOption}
+            \nodepart{second}
+            - id: String (PK)\\
+            - buildingId: String (FK)\\
+            - interventionTypeId: String (FK)\\
+            - name: String\\
+            - investmentCostCents: long\\
+            - annualEnergySavingScaled: long\\
+            - annualEconomicSavingCents: long\\
+            - annualCo2ReductionScaled: long\\
+            - provenance: DataProvenance
+            \nodepart{third}
+            + getId(): String\\
+            + getInvestmentCostCents(): long\\
+            + getAnnualEnergySavingScaled(): long
+        };
+
+        % OptimizationRun
+        \node[classbox, below=0.8cm of b_class] (run_class) {
+            \textbf{OptimizationRun}
+            \nodepart{second}
+            - runId: String (PK)\\
+            - scenarioId: String\\
+            - problemHash: String\\
+            - budgetCents: long\\
+            - objectiveValue: long\\
+            - solverStatus: String\\
+            - optimalityProven: boolean\\
+            - selectedOptionsJson: String\\
+            - explanationsJson: String\\
+            - createdAt: LocalDateTime
+            \nodepart{third}
+            + getRunId(): String\\
+            + getProblemHash(): String
+        };
+
+        % OptimizationProblem
+        \node[classbox, right=0.8cm of run_class] (prob_class) {
+            \textbf{OptimizationProblem} (Record)
+            \nodepart{second}
+            + scenarioId: String\\
+            + budgetCents: long\\
+            + objective: Objective\\
+            + candidateOptions: List<CandidateOption>\\
+            + constraints: List<ScenarioConstraint>
+            \nodepart{third}
+            + candidateOptions(): List<CandidateOption>\\
+            + budgetCents(): long
+        };
+
+        % OptimizationService
+        \node[classbox, below=0.8cm of run_class] (serv_class) {
+            \textbf{OptimizationService}
+            \nodepart{second}
+            - solver: OptimizationSolver\\
+            - hasher: ProblemHasher\\
+            - explanationService: ExplanationService\\
+            - runRepository: OptimizationRunRepository
+            \nodepart{third}
+            + optimize(scenarioId, budget, obj, ...): OptimizationResult\\
+            + getRun(runId): Optional<OptimizationRun>
+        };
+
+        % Solver
+        \node[classbox, right=0.8cm of serv_class] (ortools_class) {
+            \textbf{OrToolsSolver}
+            \nodepart{second}
+            - config: SolverConfiguration
+            \nodepart{third}
+            + solve(p: OptimizationProblem): OptimizationResult\\
+            - solvePrimary(...): StepResult\\
+            - solveMinCost(...): StepResult\\
+            - solveMinCount(...): StepResult\\
+            - solveLexicographic(...): List<String>
+        };
+
+        % Connectors
+        \draw[-Latex, thick] (opt_class.west) -- node[above, font=\tiny] {N..1} (b_class.east);
+        \draw[-Latex, thick] (serv_class.north) -- (run_class.south);
+        \draw[-Latex, thick] (serv_class.east) -- (ortools_class.west);
+        \draw[-Latex, thick] (ortools_class.north) -- (prob_class.south);
+    \end{tikzpicture}
+    \caption{Class Diagram del backend Spring Boot di TEPO.}
+    \label{fig:class_final}
+\end{figure}
+
+\subsection{Schema del Database Relazionale ed Entity-Relationship Diagram}
+La persistenza dei dati è gestita dal motore relazionale PostgreSQL 16. La struttura delle tabelle, illustrata nello schema ER di Figura~\ref{fig:erd_diagram}, è stata progettata per garantire l'integrità referenziale assoluta e massimizzare le performance di interrogazione durante le sessioni di ottimizzazione.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.2cm and 1.5cm,
+        entity/.style={draw=black!80, fill=yellow!10, thick, rectangle split, rectangle split parts=2, rounded corners=2pt, align=left, font=\scriptsize, inner sep=4pt},
+        rel/.style={draw=black!80, fill=white, diamond, thick, font=\tiny\bfseries, inner sep=2pt}
+    ]
+        % Buildings
+        \node[entity] (buildings) {
+            \textbf{BUILDINGS}
+            \nodepart{second}
+            \underline{id}: VARCHAR(64) [PK]\\
+            name: VARCHAR(255) [NN]\\
+            address: VARCHAR(255)\\
+            municipality: VARCHAR(128)\\
+            latitude: DOUBLE PRECISION\\
+            longitude: DOUBLE PRECISION\\
+            building\_type: VARCHAR(64)\\
+            surface\_m2: DOUBLE PRECISION\\
+            annual\_energy\_consumption\_kwh: DOUBLE\\
+            annual\_energy\_cost\_eur: DOUBLE\\
+            annual\_co2\_kg: DOUBLE\\
+            provenance: VARCHAR(32) [NN]
+        };
+
+        % InterventionTypes
+        \node[entity, right=2cm of buildings] (types) {
+            \textbf{INTERVENTION\_TYPES}
+            \nodepart{second}
+            \underline{id}: VARCHAR(64) [PK]\\
+            name: VARCHAR(255) [NN]\\
+            category: VARCHAR(128)\\
+            description: VARCHAR(2000)
+        };
+
+        % InterventionOptions
+        \node[entity, below=1.5cm of buildings] (options) {
+            \textbf{INTERVENTION\_OPTIONS}
+            \nodepart{second}
+            \underline{id}: VARCHAR(64) [PK]\\
+            building\_id: VARCHAR(64) [FK, NN]\\
+            intervention\_type\_id: VARCHAR(64) [FK, NN]\\
+            name: VARCHAR(255) [NN]\\
+            description: VARCHAR(2000)\\
+            investment\_cost\_cents: BIGINT [NN]\\
+            annual\_energy\_saving\_scaled: BIGINT [NN]\\
+            annual\_economic\_saving\_cents: BIGINT [NN]\\
+            annual\_co2\_reduction\_scaled: BIGINT [NN]\\
+            provenance: VARCHAR(32) [NN]\\
+            source: VARCHAR(255)\\
+            revision: INT [NN]
+        };
+
+        % OptimizationRuns
+        \node[entity, below=1.5cm of types] (runs) {
+            \textbf{OPTIMIZATION\_RUNS}
+            \nodepart{second}
+            \underline{run\_id}: VARCHAR(64) [PK]\\
+            scenario\_id: VARCHAR(64) [NN]\\
+            problem\_hash: VARCHAR(64)\\
+            objective: VARCHAR(32)\\
+            budget\_cents: BIGINT [NN]\\
+            total\_investment\_cents: BIGINT [NN]\\
+            remaining\_budget\_cents: BIGINT [NN]\\
+            objective\_value: BIGINT [NN]\\
+            solver\_status: VARCHAR(32)\\
+            optimality\_proven: BOOLEAN [NN]\\
+            selected\_options\_json: TEXT\\
+            explanations\_json: TEXT\\
+            created\_at: TIMESTAMP [NN]
+        };
+
+        % Connectors
+        \draw[thick] (options.north) -- node[left, font=\tiny] {N} (buildings.south);
+        \draw[thick] (options.east) -| node[above, font=\tiny] {N} node[right, font=\tiny] {1} (types.south);
+    \end{tikzpicture}
+    \caption{Entity-Relationship Diagram (ERD) del database di TEPO.}
+    \label{fig:erd_diagram}
+\end{figure}
+
+Le scelte di modellazione dello schema relazionale evidenziano:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{Interi a 64 bit (\texttt{BIGINT}) per valori economici e metriche:} L'adozione del tipo \texttt{BIGINT} per memorizzare gli importi in centesimi di euro e i risparmi in unità scalate elimina alla radice i problemi di propagazione dell'errore di troncamento tipici dei tipi a virgola mobile (\texttt{FLOAT} o \texttt{DOUBLE}), garantendo l'esattezza matematica nei calcoli di bilancio pubblico.
+    \item \textbf{Integrità Referenziale con Chiavi Esterne:} Le colonne \texttt{building\_id} e \texttt{intervention\_type\_id} impongono vincoli di \texttt{FOREIGN KEY} stringenti, impedendo la presenza di opzioni orfane.
+    \item \textbf{Indici di Performance B-Tree:} L'indice \texttt{idx\_options\_building} su \texttt{intervention\_options} accelera le query di aggregazione degli edifici, mentre gli indici \texttt{idx\_runs\_scenario} e \texttt{idx\_runs\_created} ottimizzano le interrogazioni temporali del registro di audit.
+\end{itemize}
+
+\subsection{Sequence Diagrams dei Flussi Chiave}
+Per descrivere la dinamica temporale del sistema, vengono riportati di seguito i diagrammi di sequenza relativi ai tre flussi operativi più critici di TEPO.
+
+\subsubsection{Flusso 1: Configurazione ed Esecuzione dell'Ottimizzazione Matematica}
+La Figura~\ref{fig:seq_opt} illustra le interazioni sincrone e asincrone che si sviluppano a partire dalla pressione del pulsante ``Esegui Ottimizzazione'' nella vista \texttt{ScenarioBuilder} fino alla memorizzazione della soluzione ottima su database.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.85, every node/.style={transform shape},
+        lifeline/.style={draw=black!50, dashed, thick},
+        actor/.style={draw=black!80, fill=tepoblue!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.6cm, minimum width=2.2cm},
+        msg/.style={-Latex, thick, font=\tiny},
+        retmsg/.style={-Latex, dashed, thick, font=\tiny}
+    ]
+        % Lifelines
+        \node[actor] (client) at (0,0) {Web Client\\(React SPA)};
+        \node[actor] (ctrl) at (3,0) {Scenario\\Controller};
+        \node[actor] (serv) at (6,0) {Optimization\\Service};
+        \node[actor] (solver) at (9,0) {OrToolsSolver\\(CP-SAT)};
+        \node[actor] (db) at (12,0) {PostgreSQL\\Database};
+
+        \draw[lifeline] (client) -- (0,-6.5);
+        \draw[lifeline] (ctrl) -- (3,-6.5);
+        \draw[lifeline] (serv) -- (6,-6.5);
+        \draw[lifeline] (solver) -- (9,-6.5);
+        \draw[lifeline] (db) -- (12,-6.5);
+
+        % Messages
+        \draw[msg] (0,-0.8) -- node[above] {POST /api/scenarios/\{id\}/optimize} (3,-0.8);
+        \draw[msg] (3,-1.4) -- node[above] {optimize(scenarioId, budget, obj, ...)} (6,-1.4);
+        \draw[msg] (6,-2.0) -- node[above] {calcola SHA-256 canonico} (6,-2.3) -- (6.3,-2.3) -- (6.3,-2.0);
+        \draw[msg] (6,-2.7) -- node[above] {solve(OptimizationProblem)} (9,-2.7);
+        \node[draw=orange!80, fill=orange!10, rounded corners=2pt, font=\tiny, align=left] at (9,-3.6) {
+            1. Maximize Obj\\
+            2. Minimize Cost\\
+            3. Minimize Count\\
+            4. Lexicographic ID
+        };
+        \draw[retmsg] (9,-4.5) -- node[above] {OptimizationResult (OPTIMAL)} (6,-4.5);
+        \draw[msg] (6,-5.0) -- node[above] {calcola spiegazioni barriere locali} (6,-5.3) -- (6.3,-5.3) -- (6.3,-5.0);
+        \draw[msg] (6,-5.7) -- node[above] {INSERT INTO optimization\_runs} (12,-5.7);
+        \draw[retmsg] (6,-6.0) -- node[above] {OptimizationResult DTO} (3,-6.0);
+        \draw[retmsg] (3,-6.3) -- node[above] {HTTP 200 OK (JSON Result)} (0,-6.3);
+    \end{tikzpicture}
+    \caption{Sequence Diagram: esecuzione dell'ottimizzazione e audit trail.}
+    \label{fig:seq_opt}
+\end{figure}
+
+\subsubsection{Flusso 2: Assistenza AI con Fallback e Validazione Umana}
+La Figura~\ref{fig:seq_ai} descrive il pattern \emph{Human-in-the-Loop}: l'operatore richiede una configurazione in linguaggio naturale; il sistema tenta l'interpretazione tramite LLM esterno e, in caso di guasto o assenza di connettività, attiva il fallback deterministico locale. I parametri vengono restituiti all'utente per verifica e applicazione esplicita.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.85, every node/.style={transform shape},
+        lifeline/.style={draw=black!50, dashed, thick},
+        actor/.style={draw=black!80, fill=purple!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.6cm, minimum width=2.2cm},
+        msg/.style={-Latex, thick, font=\tiny},
+        retmsg/.style={-Latex, dashed, thick, font=\tiny}
+    ]
+        % Lifelines
+        \node[actor] (user) at (0,0) {Operatore\\Tecnico};
+        \node[actor] (ui) at (3,0) {AiAssistant\\Panel (React)};
+        \node[actor] (ctrl) at (6,0) {AiController\\(Spring)};
+        \node[actor] (llm) at (9,0) {LlmAiAssistant\\(Provider REST)};
+        \node[actor] (rule) at (12,0) {RuleBasedAi\\Assistant};
+
+        \draw[lifeline] (user) -- (0,-5.5);
+        \draw[lifeline] (ui) -- (3,-5.5);
+        \draw[lifeline] (ctrl) -- (6,-5.5);
+        \draw[lifeline] (llm) -- (9,-5.5);
+        \draw[lifeline] (rule) -- (12,-5.5);
+
+        % Messages
+        \draw[msg] (0,-0.8) -- node[above] {Inserisce prompt ("Budget 500k")} (3,-0.8);
+        \draw[msg] (3,-1.3) -- node[above] {POST /api/ai/propose-scenario} (6,-1.3);
+        \draw[msg] (6,-1.8) -- node[above] {proposeScenario(prompt)} (9,-1.8);
+        \node[font=\tiny, text=red] at (9,-2.4) {$\times$ Errore / Timeout / No Key};
+        \draw[msg] (6,-2.9) -- node[above] {Failover: proposeScenario(prompt)} (12,-2.9);
+        \draw[retmsg] (12,-3.5) -- node[above] {ScenarioProposal (fallback=true)} (6,-3.5);
+        \draw[retmsg] (6,-4.0) -- node[above] {HTTP 200 OK + Warning Fallback} (3,-4.0);
+        \draw[retmsg] (3,-4.6) -- node[above] {Mostra parametri proposti per revisione} (0,-4.6);
+        \draw[msg] (0,-5.2) -- node[above] {Conferma o modifica parametri} (3,-5.2);
+    \end{tikzpicture}
+    \caption{Sequence Diagram: proposta AI con fallback rule-based e conferma umana.}
+    \label{fig:seq_ai}
+\end{figure}
+
+\subsubsection{Flusso 3: Importazione Dati CSV con Validazione a Secco (Dry-Run)}
+La Figura~\ref{fig:seq_import} evidenzia il processo di ingestione atomica in due stadi: l'operatore carica un foglio CSV; il backend lo valida a secco restituendo le eventuali righe errate senza toccare il database; a seguito di conferma esplicita, i dati vengono persistiti in una transazione ACID.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.85, every node/.style={transform shape},
+        lifeline/.style={draw=black!50, dashed, thick},
+        actor/.style={draw=black!80, fill=tepogreen!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.6cm, minimum width=2.2cm},
+        msg/.style={-Latex, thick, font=\tiny},
+        retmsg/.style={-Latex, dashed, thick, font=\tiny}
+    ]
+        % Lifelines
+        \node[actor] (user) at (0,0) {Operatore\\Tecnico};
+        \node[actor] (ui) at (3.5,0) {ImportPage\\Wizard (React)};
+        \node[actor] (ctrl) at (7,0) {ImportController\\(Spring)};
+        \node[actor] (db) at (10.5,0) {PostgreSQL\\Database};
+
+        \draw[lifeline] (user) -- (0,-5.2);
+        \draw[lifeline] (ui) -- (3.5,-5.2);
+        \draw[lifeline] (ctrl) -- (7,-5.2);
+        \draw[lifeline] (db) -- (10.5,-5.2);
+
+        % Messages
+        \draw[msg] (0,-0.8) -- node[above] {Carica file CSV} (3.5,-0.8);
+        \draw[msg] (3.5,-1.3) -- node[above] {POST /api/import/validate (Multipart)} (7,-1.3);
+        \draw[msg] (7,-1.8) -- node[above] {Parsing \& Dry-run su memoria (no commit)} (7,-2.1) -- (7.3,-2.1) -- (7.3,-1.8);
+        \draw[retmsg] (7,-2.6) -- node[above] {ValidationReport (errori per riga, anteprima)} (3.5,-2.6);
+        \draw[retmsg] (3.5,-3.1) -- node[above] {Visualizza statistiche di pre-validazione} (0,-3.1);
+        \draw[msg] (0,-3.7) -- node[above] {Clicca "Conferma e Importa"} (3.5,-3.7);
+        \draw[msg] (3.5,-4.2) -- node[above] {POST /api/import/execute} (7,-4.2);
+        \draw[msg] (7,-4.6) -- node[above] {BEGIN TRANSACTION ... COMMIT} (10.5,-4.6);
+        \draw[retmsg] (7,-4.9) -- node[above] {HTTP 200 OK (Import completato)} (3.5,-4.9);
+        \draw[retmsg] (3.5,-5.1) -- node[above] {Notifica Toast successo} (0,-5.1);
+    \end{tikzpicture}
+    \caption{Sequence Diagram: procedura di importazione CSV in due fasi con validazione a secco.}
+    \label{fig:seq_import}
+\end{figure}
