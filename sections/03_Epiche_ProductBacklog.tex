@@ -1,0 +1,107 @@
+\section{Epiche e Product Backlog}
+\label{sec:epiche_backlog}
+
+\subsection{Definizione delle Macro-Epiche}
+Al fine di strutturare il percorso di implementazione in moduli coerenti ed evolutivi, i requisiti funzionali (RF) e le user story (US) identificati nella baseline di D1 sono stati aggregati in cinque \textbf{Macro-Epiche} di progetto. Ciascuna epica rappresenta un'area di valore strategico e funzionale per l'operatore tecnico e per l'Amministrazione del Comune di Trento:
+
+\begin{enumerate}[leftmargin=1.8em, itemsep=0.4em]
+    \item \textbf{EP-01 --- Gestione del Patrimonio Edilizio e Catalogo Interventi:}
+    Comprende le funzionalità di consultazione, esplorazione e georeferenziazione degli edifici comunali e delle opzioni di efficientamento tecnologico disponibili. Include la visualizzazione cartografica interattiva su mappa di Trento e l'indicazione permanente della provenienza sintetica del dato a garanzia della trasparenza amministrativa.
+    \emph{Traccia requisiti: RF-01, RF-02, RF-08; US-01, US-02, US-08, US-09.}
+
+    \item \textbf{EP-02 --- Scenario Building e Vincoli Tecnici di Policy:}
+    Raggruppa gli strumenti per la definizione guidata degli scenari decisionali: impostazione del massimale di spesa (budget), selezione dell'obiettivo prioritario (risparmio energetico in kWh, risparmio economico in \euro{} o abbattimento di emissioni di CO\textsubscript{2} in kg), inclusione/esclusione selettiva degli interventi candidati e configurazione dei vincoli relazionali (mutua esclusione tra interventi incompatibili, vincoli di prerequisito tecnologico e tetti massimi per tipologia).
+    \emph{Traccia requisiti: RF-03, RF-04; US-03, US-14.}
+
+    \item \textbf{EP-03 --- Ottimizzazione Matematica Esatta e Motore di Spiegazione:}
+    Costituisce il cuore algoritmico di TEPO. Integra la modellazione esatta del problema combinatorio risolta mediante il solver Google OR-Tools CP-SAT, il protocollo di tie-break lessicografico canonico a 4 passi per assicurare la riproducibilità matematica, il calcolo dell'hash canonico $H(P)$ per l'audit trail e la classificazione causale deterministica delle motivazioni di inclusione ed esclusione per ciascun intervento candidato.
+    \emph{Traccia requisiti: RF-05, RF-06, RF-07; US-04, US-05.}
+
+    \item \textbf{EP-04 --- Analisi Comparativa What-If e Sensibilità sul Budget:}
+    Offre al decisore gli strumenti analitici avanzati per esplorare la robustezza delle scelte: il confronto affiancato What-If tra due scenari alternativi (Slot A vs Slot B) con calcolo automatico dei delta differenziali su costi e benefici, e l'analisi di sensibilità parametrica con sweep deterministico del budget (griglia da 3 a 51 punti di valutazione) per identificare gli interventi strutturali stabili rispetto a quelli instabili.
+    \emph{Traccia requisiti: RF-09, RF-10; US-06, US-07.}
+
+    \item \textbf{EP-05 --- Assistente AI Sovrintendente e Importazione Dati Atomica:}
+    Include i componenti avanzati di supporto e integrazione: l'assistente conversazionale in linguaggio naturale configurato secondo il pattern human-in-the-loop con fallback deterministico a regole, e il wizard di caricamento dati da fogli CSV con parsing tollerante, validazione a secco (dry-run) e commit atomico transazionale.
+    \emph{Traccia requisiti: RF-11, RF-12; US-10, US-11, US-12, US-13, US-15.}
+\end{enumerate}
+
+\subsection{Criteri di Stima e Metodologia di Prioritizzazione}
+La pianificazione delle attività di sviluppo ha fatto ricorso a metriche agili consolidate:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.3em]
+    \item \textbf{Story Points (SP):} La complessità relativa di ciascuna user story è stata stimata adottando la scala di Fibonacci standard ($1, 2, 3, 5, 8, 13$), valutando congiuntamente l'onere computazionale, la complessità dell'interfaccia utente, la criticità dei vincoli di integrità e il livello di copertura di test richiesto.
+    \item \textbf{Prioritizzazione MoSCoW:} Ciascun elemento del backlog è stato classificato secondo le quattro categorie formali:
+    \begin{itemize}[leftmargin=1.2em, itemsep=0.15em]
+        \item \textbf{Must have (M):} Requisiti irrinunciabili senza i quali il sistema non può assolvere la sua funzione essenziale (core di ottimizzazione, catalogo, scenari base).
+        \item \textbf{Should have (S):} Funzionalità di alto valore operativo per l'operatore tecnico (spiegazioni deterministiche, confronto What-If, mappa interattiva).
+        \item \textbf{Could have (C):} Funzionalità analitiche avanzate o di supporto all'usabilità (analisi di sensibilità parametrica, assistente AI opzionale, doppio registro visivo).
+        \item \textbf{Won't have (W) per questo rilascio:} Funzionalità identificate ma escluse dalla baseline (es. ottimizzazione multi-periodo su più annualità di bilancio, integrazione diretta con il catasto comunale).
+    \end{itemize}
+\end{itemize}
+
+\subsection{Tabella del Product Backlog}
+La Tabella~\ref{tab:product_backlog} illustra il Product Backlog integrale di TEPO, specificando per ciascuna user story l'epica associata, i requisiti funzionali coperti, la complessità stimata in Story Points, la priorità MoSCoW e lo sprint di allocazione.
+
+\begin{longtable}{@{}p{1.4cm}p{4.2cm}p{1.4cm}p{1.2cm}p{1.2cm}p{1.2cm}p{2.8cm}@{}}
+\caption{Product Backlog completo del progetto TEPO.} \label{tab:product_backlog} \\
+\toprule
+\textbf{ID US} & \textbf{Titolo User Story} & \textbf{Epica} & \textbf{RF} & \textbf{SP} & \textbf{MoSCoW} & \textbf{Sprint / Stato} \\
+\midrule
+\endfirsthead
+\multicolumn{7}{c}%
+{{\bfseries \tablename\ \thetable{} -- Continua dalla pagina precedente}} \\
+\toprule
+\textbf{ID US} & \textbf{Titolo User Story} & \textbf{Epica} & \textbf{RF} & \textbf{SP} & \textbf{MoSCoW} & \textbf{Sprint / Stato} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{{Continua nella pagina successiva...}} \\
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+
+\textbf{US-01} & Catalogo degli Edifici & EP-01 & RF-01 & 3 & Must & Sprint 1 (Completata) \\
+\textbf{US-02} & Catalogo Interventi e Dettaglio & EP-01 & RF-02 & 3 & Must & Sprint 1 (Completata) \\
+\textbf{US-08} & Cartografia Interattiva Leaflet & EP-01 & RF-08 & 5 & Should & Sprint 1 (Completata) \\
+\textbf{US-09} & Dashboard di Controllo e Shell & EP-01 & RF-01,02 & 5 & Must & Sprint 1 (Completata) \\
+\midrule
+\textbf{US-03} & Configurazione Scenario & EP-02 & RF-03,04 & 8 & Must & Sprint 2 (Completata) \\
+\textbf{US-04} & Risoluzione Ottima CP-SAT & EP-03 & RF-05 & 13 & Must & Sprint 2 (Completata) \\
+\textbf{US-05} & Motore Spiegazioni Deterministiche & EP-03 & RF-06 & 8 & Should & Sprint 2 (Completata) \\
+\textbf{US-14} & Audit Trail e Hash Canonico & EP-03 & RF-07 & 5 & Should & Sprint 2 (Completata) \\
+\midrule
+\textbf{US-06} & Confronto Scenari What-If A/B & EP-04 & RF-09 & 5 & Should & Sprint 3 (Completata) \\
+\textbf{US-07} & Analisi Sensibilita sul Budget & EP-04 & RF-10 & 8 & Could & Sprint 3 (Completata) \\
+\textbf{US-10} & Importazione Guidata Dati da CSV & EP-05 & RF-12 & 8 & Should & Sprint 3 (Completata) \\
+\midrule
+\textbf{US-11} & Assistente AI Human-in-the-Loop & EP-05 & RF-11 & 5 & Could & Sprint 4 (Completata) \\
+\textbf{US-12} & Fallback Rule-Based Locale & EP-05 & RF-11 & 3 & Should & Sprint 4 (Completata) \\
+\textbf{US-13} & Accessibilita e Temi (Relazione/Sala) & EP-01 & RNF-01 & 5 & Should & Sprint 4 (Completata) \\
+\textbf{US-15} & Esportazione Relazione e Stampa & EP-04 & RNF-02 & 3 & Could & Sprint 4 (Completata) \\
+\midrule
+\textbf{Totale} & \textbf{15 User Story implementate} & & & \textbf{87 SP} & & \textbf{Velocita media: 21.75 SP} \\
+\end{longtable}
+
+\subsection{Definition of Ready (DoR) e Definition of Done (DoD)}
+Per garantire il controllo di qualità metodologico lungo l'intero ciclo di sviluppo dello Specification-Driven Development, sono stati formalizzati e rigorosamente applicati due guardrail operativi:
+
+\subsubsection{Definition of Ready (DoR)}
+Una User Story può essere inserita nello Sprint Backlog ed essere presa in carico per l'implementazione soltanto se soddisfa congiuntamente tutte le seguenti condizioni:
+\begin{enumerate}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Formulazione Strutturata:} La storia rispetta il formato standard \emph{Come <ruolo>, desidero <funzionalità>, affinché <beneficio misurabile>}.
+    \item \textbf{Criteri di Accettazione Formalizzati:} I criteri di accettazione (Acceptance Criteria, AC) sono definiti in modo univoco e non ambiguo secondo la sintassi \emph{GIVEN - WHEN - THEN}.
+    \item \textbf{Modello Dati e Contratti API Identificati:} Sono stabiliti i requisiti di persistenza (tabelle o attributi coinvolti) e i contratti di scambio dati DTO (formato JSON dei payload).
+    \item \textbf{Interfaccia Utente e Stati Operativi Definiti:} Sono disponibili i wireframe di riferimento e sono stati chiariti gli stati operativi del componente (caricamento, visualizzazione dati, stato vuoto ed errore).
+    \item \textbf{Stima Condivisa e Indipendenza:} La stima in Story Points è stata approvata all'unanimità dal team e non sussistono blocchi o dipendenze irrisolte verso altre storie non completate.
+\end{enumerate}
+
+\subsubsection{Definition of Done (DoD)}
+Una User Story è considerata formalmente completata (\emph{Done}) e pronta per l'accettazione finale solo quando soddisfa tutti i seguenti requisiti di qualità:
+\begin{enumerate}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Codice Sorgente e Standard:} Il codice rispetta le convenzioni di stile Java/Spring Boot e TypeScript/React, senza avvisi critici di linting o violazioni di tipo.
+    \item \textbf{Copertura Test Unitari e di Integrazione:} Tutti i nuovi componenti logici sono corredati da test automatici corrispondenti agli AC (inclusi casi limite e gestione errori), e l'intera suite di regressione locale risulta verde.
+    \item \textbf{Verifica Continua in CI:} La Pull Request associata è stata compilata ed eseguita con successo su GitHub Actions (sia per il backend Maven che per il frontend Vitest).
+    \item \textbf{Allineamento dei Diagrammi UML e della Documentazione:} I modelli dei componenti e delle classi riflettono accuratamente le modifiche apportate al codice sorgente; le specifiche API e i file di documentazione sono aggiornati.
+    \item \textbf{Collaudo Funzionale e Merge:} La funzionalità è stata verificata nel container locale o in staging e la PR è stata unita al ramo \texttt{main} con commit conforme agli standard.
+\end{enumerate}
