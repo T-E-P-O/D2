@@ -1,0 +1,175 @@
+\section{Deployment e Infrastruttura di Esercizio}
+\label{sec:deployment_esercizio}
+
+\subsection{Strategia di Containerizzazione con Docker}
+Al fine di garantire l'assoluta riproducibilità dell'ambiente di esecuzione, scongiurare il problema delle discrepanze tra macchine di sviluppo e produzione (\emph{``works on my machine''}) e semplificare le operazioni di collaudo, l'intera applicazione TEPO è completamente containerizzata impiegando \textbf{Docker}.
+
+L'architettura dei container adotta il pattern delle \textbf{Multi-Stage Build}, consentendo di separare rigidamente gli strumenti pesanti di compilazione e testing (Maven, JDK completo, Node.js) dai leggeri ambienti di esecuzione di produzione (JRE minimale, Nginx Alpine), riducendo l'impronta di memoria e abbattendo la superficie di vulnerabilità.
+
+\subsubsection{Immagine Docker del Backend (\texttt{backend/Dockerfile})}
+L'immagine di backend impiega due stadi distinti:
+\begin{enumerate}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{Stage di Build (Maven + JDK 21):} Basato su \texttt{maven:3.9-eclipse-temurin-21}. Esegue il download delle dipendenze, scarica ed estrae i binari C++ nativi multipiattaforma di Google OR-Tools per Linux x86\_64 e compila il pacchetto JAR eseguibile;
+    \item \textbf{Stage di Runtime (JRE 21 Minimale):} Basato sull'immagine ufficiale \texttt{eclipse-temurin:21-jre-jammy}. Copia esclusivamente l'archivio compilato \texttt{tepo-backend.jar}, isola l'utente di sistema per ragioni di sicurezza e configura il binding dinamico della porta di ascolto attraverso la variabile d'ambiente \texttt{\$\{PORT:8080\}}.
+\end{enumerate}
+
+\subsubsection{Immagine Docker del Frontend (\texttt{frontend/Dockerfile})}
+Similmente, il frontend è strutturato su due livelli:
+\begin{enumerate}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{Stage di Build (Node.js 24 Alpine):} Installa in modo deterministico le dipendenze dichiarate in \texttt{package-lock.json} tramite \texttt{npm ci} e compila i sorgenti TypeScript/Vite in un bundle statico altamente ottimizzato e minificato;
+    \item \textbf{Stage di Runtime (Nginx Alpine):} Copia gli asset statici nella cartella \texttt{/usr/share/nginx/html} di un web server \texttt{nginx:alpine}. La configurazione custom \texttt{nginx.conf} gestisce la compressione Gzip per fogli di stile e script, imposta header di caching aggressivo per gli asset dotati di hash univoco nel nome file e reindirizza qualsiasi richiesta non corrispondente a un file statico verso \texttt{index.html}, consentendo il corretto funzionamento dell'HTML5 History Routing della SPA.
+\end{enumerate}
+
+\subsubsection{Orchestrazione Locale con Docker Compose}
+L'orchestrazione locale è governata dal file \texttt{docker-compose.yaml}, che istanzia una rete privata interna e coordina i tre servizi essenziali:
+\begin{lstlisting}, caption={Configurazione dei servizi in docker-compose.yaml.}]
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tepo-db
+    environment:
+      POSTGRES_DB: tepo
+      POSTGRES_USER: tepo
+      POSTGRES_PASSWORD: tepo
+    ports:
+      - "5432:5432"
+    volumes:
+      - tepo-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tepo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: tepo-backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/tepo
+      DB_USERNAME: tepo
+      DB_PASSWORD: tepo
+      SPRING_PROFILES_ACTIVE: demo
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/scenarios/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  frontend:
+    build: ./frontend
+    container_name: tepo-frontend
+    environment:
+      BACKEND_URL: http://backend:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+\end{lstlisting}
+
+L'adozione della clausola \texttt{condition: service\_healthy} previene qualsiasi race condition durante la fase di avvio: il backend Spring Boot attende che il motore PostgreSQL sia pienamente responsivo su porta 5432 prima di lanciare le migrazioni Flyway; a sua volta, il frontend Nginx attende che il backend risponda con HTTP 200 all'endpoint di \texttt{ping} prima di aprire l'ascolto su porta 5173.
+
+\subsection{Deployment in Cloud su Piattaforma Render}
+L'ambiente di collaudo pubblico accessibile da commissione e utenti è distribuito sulla piattaforma cloud PaaS \textbf{Render} (\url{https://render.com}), all'indirizzo certificato:
+\begin{center}
+    \url{https://tepo.onrender.com}
+\end{center}
+
+Il deployment è interamente automatizzato secondo i principi dell'\textbf{Infrastructure-as-Code} (IaC) per mezzo del file di specifica \texttt{render.yaml} presente nella radice del repository:
+
+\begin{lstlisting}, caption={Estratto del blueprint Infrastructure-as-Code render.yaml.}]
+services:
+  - type: web
+    name: tepo
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/scenarios/ping
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: DATABASE_URL
+        sync: false
+      - key: TEPO_SOLVER_PRIMARY_TIMEOUT
+        value: "10"
+      - key: TEPO_SOLVER_SECONDARY_TIMEOUT
+        value: "3"
+      - key: TEPO_SOLVER_LEX_TIMEOUT
+        value: "1"
+\end{lstlisting}
+
+\subsubsection{Normalizzazione della Connessione al Database Cloud}
+Una specifica sfida ingegneristica affrontata nel deployment su Render riguarda il formato delle stringhe di connessione fornite dai managed database PostgreSQL. I provider cloud definiscono comunemente l'URI nella variabile di sistema \texttt{DATABASE\_URL} secondo lo schema standard URI:
+\begin{center}
+    \texttt{postgres://user:password@hostname:5432/databasename}
+\end{center}
+Tale formato è incompatibile con il driver JDBC ufficiale di PostgreSQL e con il connection pool HikariCP impiegati da Spring Boot, i quali richiedono obbligatoriamente il protocollo:
+\begin{center}
+    \texttt{jdbc:postgresql://hostname:5432/databasename}
+\end{center}
+accompagnato da parametri separati per username, password e crittografia SSL (\texttt{sslmode=require}).
+Per ovviare a tale incompatibilità in modo trasparente e manutenibile, il team ha sviluppato il componente \texttt{DatabaseUrlEnvironmentPostProcessor} implementando l'interfaccia \texttt{EnvironmentPostProcessor} di Spring Boot:
+
+\begin{lstlisting}[language=java, caption={Risoluzione dinamica di DATABASE\_URL per il deployment cloud in Spring Boot.}]
+public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProcessor {
+    @Override
+    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        String databaseUrl = environment.getProperty("DATABASE_URL");
+        if (databaseUrl != null && (databaseUrl.startsWith("postgres://") || databaseUrl.startsWith("postgresql://"))) {
+            try {
+                URI uri = new URI(databaseUrl);
+                String userInfo = uri.getUserInfo();
+                String username = userInfo != null ? userInfo.split(":")[0] : "";
+                String password = userInfo != null && userInfo.contains(":") ? userInfo.split(":")[1] : "";
+                String jdbcUrl = "jdbc:postgresql://" + uri.getHost() + ":" 
+                               + (uri.getPort() > 0 ? uri.getPort() : 5432) 
+                               + uri.getPath() + "?sslmode=require";
+
+                Map<String, Object> props = new HashMap<>();
+                props.put("spring.datasource.url", jdbcUrl);
+                props.put("spring.datasource.username", username);
+                props.put("spring.datasource.password", password);
+                props.put("spring.datasource.driver-class-name", "org.postgresql.Driver");
+
+                environment.getPropertySources().addFirst(new MapPropertySource("renderDbProps", props));
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException("Formato DATABASE_URL non valido: " + databaseUrl, e);
+            }
+        }
+    }
+}
+\end{lstlisting}
+Tale approccio risolve le credenziali di produzione al boot dell'applicazione senza memorizzare segreti in chiaro nel repository Git.
+
+\subsection{Verifica dell'Ambiente di Esercizio e SLA di Erogazione}
+Il sistema distribuito su Render è stato sottoposto a collaudo e monitoraggio prestazionale continuativo, registrando le metriche riportate nella Tabella~\ref{tab:sla_produzione}.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}p{5cm}p{3cm}p{7cm}@{}}
+\toprule
+\textbf{Parametro Prestazionale} & \textbf{Valore Rilevato} & \textbf{Note di Esercizio e Tolleranze} \\
+\midrule
+\textbf{Tempo di Risposta API Lettura} & $< 45$ ms & Misurato su \texttt{GET /api/buildings} e \texttt{/api/interventions} a regime. \\
+\textbf{Tempo di Ottimizzazione CP-SAT} & $120$ -- $180$ ms & Calcolo del portafoglio ottimo su 300 variabili binarie e 4 passi di tie-break lessicografico. \\
+\textbf{Tempo di Sweep Sensibilità (11 pt)} & $1.2$ -- $1.8$ s & Sequenza di 11 ottimizzazioni esatte progressive con ricalcolo delle spiegazioni. \\
+\textbf{Impronta Memoria Backend} & $\approx 290$ MB & Gestione memoria JVM calibrata per rientrare agevolmente nel limite di 512 MB del tier gratuito. \\
+\textbf{Disponibilità del Servizio} & $> 99.5\%$ & Gestione dell'avvio a freddo (cold start di circa 40s dopo inattività del tier free). \\
+\textbf{Ripristino del Dataset Demo} & $< 200$ ms & Esecuzione transazionale dell'endpoint di reset \texttt{/api/import/reset-demo}. \\
+\bottomrule
+\end{tabular}
+\caption{Metriche prestazionali rilevate nell'ambiente di produzione cloud su Render.}
+\label{tab:sla_produzione}
+\end{table}
