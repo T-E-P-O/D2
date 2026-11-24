@@ -9,92 +9,113 @@ La Figura~\ref{fig:cmp_final} illustra il Component Diagram definitivo di TEPO, 
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        scale=0.88, every node/.style={transform shape},
-        node distance=0.8cm and 1cm,
-        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.3cm},
-        solvercomp/.style={draw=orange!80, fill=orange!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.3cm},
-        aicomp/.style={draw=purple!80, fill=purple!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.3cm},
-        db/.style={cylinder, draw=black!80, fill=yellow!15, thick, shape border rotate=90, aspect=0.25, minimum width=2.4cm, minimum height=1.1cm, align=center, font=\scriptsize\bfseries},
+        scale=0.76, every node/.style={transform shape},
+        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.85cm},
+        solvercomp/.style={draw=orange!80, fill=orange!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.85cm},
+        aicomp/.style={draw=purple!80, fill=purple!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.85cm},
+        db/.style={draw=black!80, fill=yellow!15, rounded corners=4pt, thick, align=center, font=\scriptsize\bfseries, minimum height=1.0cm},
         box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=6pt},
         arrow/.style={-Latex, thick, draw=black!80}
     ]
-        % Presentation Layer
-        \node[comp] (views) {9 Viste Operative\\(React SPA Pages)};
-        \node[comp, right=0.6cm of views] (shell) {Shell \& Components\\(SideNav, CommandPalette)};
-        \node[comp, right=0.6cm of shell] (store) {Client Store\\(A/B Session, Theme)};
-        \node[comp, below=0.6cm of shell] (apiclient) {ApiClient Tipizzato\\(Fetch JSON REST)};
+        % --- TIER 1: Presentation Tier (Client SPA) ---
+        \node[comp, text width=4.0cm] (views) at (-4.8, 0) {
+            9 Viste Operative\\
+            \tiny React 18 SPA Pages $\cdot$ Router
+        };
+        \node[comp, text width=4.2cm] (shell) at (0, 0) {
+            Shell \& Componenti UI\\
+            \tiny SideNav $\cdot$ Palette $\cdot$ Theme $\cdot$ Modal
+        };
+        \node[comp, text width=4.0cm] (store) at (4.8, 0) {
+            Client State Store\\
+            \tiny Session Storage $\cdot$ A/B Compare
+        };
+        \node[comp, text width=7.0cm] (apiclient) at (0, -1.25) {
+            ApiClient Tipizzato\\
+            \tiny Fetch API $\cdot$ Mappatura DTO REST $\cdot$ Gestione Errori RFC 7807
+        };
         \begin{scope}[on background layer]
             \node[box, fit=(views) (shell) (store) (apiclient), label=above:{\small\textbf{Presentation Tier: Client Web SPA (React 18 / Vite / TypeScript)}}] (box_client) {};
         \end{scope}
 
-        % Web Server Tier
-        \node[comp, fill=gray!15, below=1.2cm of apiclient, minimum width=8cm] (nginx) {
-            Nginx Reverse Proxy \& SPA Routing Engine\\
-            \scriptsize Gzip Compression $\cdot$ Asset Cache $\cdot$ Fallback index.html
+        % --- TIER 2: Web Server & Gateway (Nginx) ---
+        \node[comp, fill=gray!15, text width=10.6cm] (nginx) at (0, -2.9) {
+            Nginx Reverse Proxy \& SPA Routing Engine (Port 80 / 443)\\
+            \tiny Compressione Gzip $\cdot$ Cache Asset Statici $\cdot$ Fallback index.html $\cdot$ Inoltro /api/*
         };
 
-        % Application Tier
-        \node[comp, below left=1.2cm and -0.8cm of nginx] (ctrl_rest) {
+        % --- TIER 3: Application Tier (Spring Boot) ---
+        \node[comp, text width=6.8cm] (ctrl_rest) at (-2.8, -5.35) {
             REST Controllers Layer\\
             \tiny ScenarioCtrl $\cdot$ SensitivityCtrl $\cdot$ ImportCtrl $\cdot$ BuildingCtrl $\cdot$ AiCtrl
         };
-        \node[comp, right=0.6cm of ctrl_rest] (exc_h) {
-            Global Exception\\Handler (RFC 7807)
+        \node[comp, text width=4.4cm] (exc_h) at (4.2, -5.35) {
+            Global Exception\\Handler (RFC 7807)\\
+            \tiny ErrorResponse DTO
         };
-        \node[comp, below=0.6cm of ctrl_rest] (app_serv) {
-            Application Services\\
+        \node[comp, text width=6.8cm] (app_serv) at (-2.8, -6.95) {
+            Application Services Layer\\
             \tiny OptimizationService $\cdot$ SensitivityService $\cdot$ DemoDataLoader
         };
-        \node[comp, right=0.6cm of app_serv] (repos) {
-            Spring Data JPA Repositories\\
+        \node[comp, text width=4.4cm] (repos) at (4.2, -6.95) {
+            Spring Data JPA Repos\\
             \tiny BuildingRepo $\cdot$ OptionRepo $\cdot$ RunRepo
         };
         \begin{scope}[on background layer]
-            \node[box, fit=(ctrl_rest) (exc_h) (app_serv) (repos), label=above:{\small\textbf{Application Tier: Spring Boot 3.3.4 (Java 21 LTS)}}] (box_backend) {};
+            \node[box, fit=(ctrl_rest) (exc_h) (app_serv) (repos), label={[xshift=2.0cm]above:{\small\textbf{Application Tier: Spring Boot 3.3.4 (Java 21 LTS)}}}] (box_backend) {};
         \end{scope}
 
-        % Optimization Engine
-        \node[solvercomp, below left=1.2cm and -0.4cm of app_serv] (solver_core) {
+        % --- TIER 4: Engines & Subsystems (Symmetric side-by-side) ---
+        % Optimization Engine (Left)
+        \node[solvercomp, text width=6.5cm] (solver_core) at (-3.7, -9.4) {
             Google OR-Tools CP-SAT\\
-            \tiny Native C++ via JNI $\cdot$ Lexicographic Tie-Break
+            \tiny Motore C++ Nativo via JNI $\cdot$ Tie-Break Lessicografico a 4 Passi
         };
-        \node[solvercomp, right=0.5cm of solver_core] (hasher_core) {
-            Problem Hasher \& Explanations\\
-            \tiny SHA-256 Canonical Hash $\cdot$ Local Barrier Engine
-        };
-        \begin{scope}[on background layer]
-            \node[box, draw=orange!60, fill=orange!3, fit=(solver_core) (hasher_core), label=above:{\small\textbf{Optimization \& Explanation Subsystem}}] (box_solver) {};
-        \end{scope}
-
-        % AI Subsystem
-        \node[aicomp, below right=1.2cm and -0.4cm of repos] (ai_mod) {
-            Hybrid AI Assistant Subsystem\\
-            \tiny LlmAiAssistant (JSON Prompt) $\cdot$ RuleBasedAiAssistant
+        \node[solvercomp, text width=6.5cm] (hasher_core) at (-3.7, -11.0) {
+            Problem Hasher \& Explanation Engine\\
+            \tiny Hash Canonico SHA-256 $\cdot$ Analisi Barriere Locali Vincoli
         };
         \begin{scope}[on background layer]
-            \node[box, draw=purple!60, fill=purple!3, fit=(ai_mod), label=above:{\small\textbf{AI Assistant Subsystem}}] (box_ai) {};
+            \node[box, draw=orange!60, fill=orange!3, fit=(solver_core) (hasher_core), label=above:{\scriptsize\textbf{Optimization \& Explanation Subsystem}}] (box_solver) {};
         \end{scope}
 
-        % Persistence Tier
-        \node[db, below=1.2cm of hasher_core, minimum width=10cm] (db_final) {
+        % AI Assistant Subsystem (Right)
+        \node[aicomp, text width=6.5cm] (ai_llm) at (3.7, -9.4) {
+            LlmAiAssistant (Provider Cloud REST)\\
+            \tiny OpenAI/Gemini Provider $\cdot$ Temperature 0.1 $\cdot$ JSON Schema
+        };
+        \node[aicomp, text width=6.5cm] (ai_rule) at (3.7, -11.0) {
+            RuleBasedAiAssistant (Deterministic Fallback)\\
+            \tiny Regole Deterministiche Locali $\cdot$ Zero Chiamate Esterne
+        };
+        \begin{scope}[on background layer]
+            \node[box, draw=purple!60, fill=purple!3, fit=(ai_llm) (ai_rule), label=above:{\scriptsize\textbf{AI Assistant Subsystem (Architettura Ibrida)}}] (box_ai) {};
+        \end{scope}
+
+        % --- TIER 5: Persistence Tier (PostgreSQL) ---
+        \node[db, text width=13.0cm] (db_final) at (0, -12.8) {
             PostgreSQL 16 Relational Database Engine\\
-            \scriptsize Flyway Migrations (V1, V2) $\cdot$ Foreign Keys $\cdot$ Composite B-Tree Indexes $\cdot$ ACID Transactions
+            \tiny Migrazioni Flyway (V1, V2) $\cdot$ Integrità Referenziale FK $\cdot$ Indici B-Tree $\cdot$ Transazioni ACID
         };
 
-        % Connectors
+        % --- CONNECTORS ---
         \draw[arrow] (apiclient) -- node[right, font=\tiny] {HTTPS} (nginx);
-        \draw[arrow] (nginx) -- node[right, font=\tiny] {Proxy pass :8080} (ctrl_rest);
+        \draw[arrow] (nginx.south -| ctrl_rest.north) -- node[left=2pt, font=\tiny] {Proxy pass :8080} (ctrl_rest.north);
         \draw[arrow] (ctrl_rest) -- (app_serv);
         \draw[arrow] (ctrl_rest) -- (exc_h);
         \draw[arrow] (app_serv) -- (repos);
-        \draw[arrow] (app_serv) -- (solver_core);
-        \draw[arrow] (app_serv) -- (hasher_core);
-        \draw[arrow] (ctrl_rest) |- (ai_mod);
-        \draw[arrow] (repos) -- node[right, font=\tiny] {JDBC Pool} (db_final);
+        \draw[arrow] (app_serv.south) -- ++(0, -0.4) -| (solver_core.north);
+        \draw[arrow] (solver_core) -- (hasher_core);
+        \draw[arrow] (app_serv.south) -- ++(0, -0.5) -| node[above, pos=0.25, font=\tiny] {AiRoute} (ai_llm.north);
+        \draw[arrow, dashed] (ai_llm) -- node[right, font=\tiny] {Failover} (ai_rule);
+        \draw[arrow] (repos.east) -- ++(1.4cm, 0) |- node[right, near start, font=\tiny] {JDBC HikariCP} (db_final.east);
+        \draw[arrow] (hasher_core.south) -- node[left, font=\tiny] {Audit Runs} (hasher_core.south |- db_final.north);
     \end{tikzpicture}
     \caption{Component Diagram finale del sistema TEPO.}
     \label{fig:cmp_final}
 \end{figure}
+
+\clearpage
 
 \subsection{Class Diagram Completo del Backend}
 La modellazione orientata agli oggetti del backend Spring Boot implementa un'architettura a strati con rigoroso incapsulamento e separazione tra entità di dominio persistenti, oggetti valore immutabili (\emph{records} di Java 21), interfacce di servizio e controller REST.
@@ -227,12 +248,13 @@ La persistenza dei dati è gestita dal motore relazionale PostgreSQL 16. La stru
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        node distance=1.2cm and 1.5cm,
-        entity/.style={draw=black!80, fill=yellow!10, thick, rectangle split, rectangle split parts=2, rounded corners=2pt, align=left, font=\scriptsize, inner sep=4pt},
+        scale=0.82, every node/.style={transform shape},
+        entity/.style={draw=black!80, fill=yellow!10, thick, rectangle split, rectangle split parts=2, rounded corners=2pt, align=left, font=\scriptsize, inner sep=4pt, text width=6.2cm},
         rel/.style={draw=black!80, fill=white, diamond, thick, font=\tiny\bfseries, inner sep=2pt}
     ]
-        % Buildings
-        \node[entity] (buildings) {
+        % --- COLONNA SINISTRA ---
+        % Buildings (Top Left)
+        \node[entity] (buildings) at (-4.2, 0) {
             \textbf{BUILDINGS}
             \nodepart{second}
             \underline{id}: VARCHAR(64) [PK]\\
@@ -249,18 +271,8 @@ La persistenza dei dati è gestita dal motore relazionale PostgreSQL 16. La stru
             provenance: VARCHAR(32) [NN]
         };
 
-        % InterventionTypes
-        \node[entity, right=2cm of buildings] (types) {
-            \textbf{INTERVENTION\_TYPES}
-            \nodepart{second}
-            \underline{id}: VARCHAR(64) [PK]\\
-            name: VARCHAR(255) [NN]\\
-            category: VARCHAR(128)\\
-            description: VARCHAR(2000)
-        };
-
-        % InterventionOptions
-        \node[entity, below=1.5cm of buildings] (options) {
+        % InterventionOptions (Bottom Left)
+        \node[entity] (options) at (-4.2, -7.5) {
             \textbf{INTERVENTION\_OPTIONS}
             \nodepart{second}
             \underline{id}: VARCHAR(64) [PK]\\
@@ -277,8 +289,19 @@ La persistenza dei dati è gestita dal motore relazionale PostgreSQL 16. La stru
             revision: INT [NN]
         };
 
-        % OptimizationRuns
-        \node[entity, below=1.5cm of types] (runs) {
+        % --- COLONNA DESTRA ---
+        % InterventionTypes (Top Right)
+        \node[entity] (types) at (4.2, 0) {
+            \textbf{INTERVENTION\_TYPES}
+            \nodepart{second}
+            \underline{id}: VARCHAR(64) [PK]\\
+            name: VARCHAR(255) [NN]\\
+            category: VARCHAR(128)\\
+            description: VARCHAR(2000)
+        };
+
+        % OptimizationRuns (Bottom Right)
+        \node[entity] (runs) at (4.2, -7.5) {
             \textbf{OPTIMIZATION\_RUNS}
             \nodepart{second}
             \underline{run\_id}: VARCHAR(64) [PK]\\
@@ -296,19 +319,37 @@ La persistenza dei dati è gestita dal motore relazionale PostgreSQL 16. La stru
             created\_at: TIMESTAMP [NN]
         };
 
-        % Connectors
-        \draw[thick] (options.north) -- node[left, font=\tiny] {N} (buildings.south);
-        \draw[thick] (options.east) -| node[above, font=\tiny] {N} node[right, font=\tiny] {1} (types.south);
+        % --- RELAZIONI E COLLEGAMENTI ORTOGONALI PULITI ---
+        % Relazione Options -> Buildings (1 a N, verticale su colonna sinistra)
+        \draw[thick] (options.north) -- 
+            node[left, font=\scriptsize\bfseries] {N} 
+            node[left, near end, font=\scriptsize\bfseries] {1} 
+            node[right, font=\tiny\itshape, align=left] {riferisce\\edificio} 
+            (buildings.south);
+
+        % Relazione Options -> Types (N a 1, attraverso il corridoio centrale vuoto)
+        % options.east esce a x=-1.1, sale lungo il corridoio x=0 ed entra in types.west a x=1.1
+        \draw[thick] (options.east) -- ++(1.1, 0) 
+            node[above, near start, font=\scriptsize\bfseries] {N}
+            -- ++(0, 7.5) 
+            -- node[above, near end, font=\scriptsize\bfseries] {1} 
+            (types.west);
+
+        % Nota esplicativa audit su runs (nessuna sovrapposizione con le linee)
+        \node[draw=orange!70, fill=orange!8, rounded corners=2pt, font=\tiny, align=center] at (4.2, -2.8) {
+            \textbf{Registro Audit Immutabile}\\
+            Snapshot JSON delle soluzioni ottime e hash SHA-256
+        };
     \end{tikzpicture}
-    \caption{Entity-Relationship Diagram (ERD) del database di TEPO.}
+    \caption{Entity-Relationship Diagram (ERD) del database relazionale di TEPO.}
     \label{fig:erd_diagram}
 \end{figure}
 
 Le scelte di modellazione dello schema relazionale evidenziano:
 \begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
     \item \textbf{Interi a 64 bit (\texttt{BIGINT}) per valori economici e metriche:} L'adozione del tipo \texttt{BIGINT} per memorizzare gli importi in centesimi di euro e i risparmi in unità scalate elimina alla radice i problemi di propagazione dell'errore di troncamento tipici dei tipi a virgola mobile (\texttt{FLOAT} o \texttt{DOUBLE}), garantendo l'esattezza matematica nei calcoli di bilancio pubblico.
-    \item \textbf{Integrità Referenziale con Chiavi Esterne:} Le colonne \texttt{building\_id} e \texttt{intervention\_type\_id} impongono vincoli di \texttt{FOREIGN KEY} stringenti, impedendo la presenza di opzioni orfane.
-    \item \textbf{Indici di Performance B-Tree:} L'indice \texttt{idx\_options\_building} su \texttt{intervention\_options} accelera le query di aggregazione degli edifici, mentre gli indici \texttt{idx\_runs\_scenario} e \texttt{idx\_runs\_created} ottimizzano le interrogazioni temporali del registro di audit.
+    \item \textbf{Integrità Referenziale con Chiavi Esterne:} Le colonne \texttt{building\_id} e \path{intervention_type_id} impongono vincoli di \texttt{FOREIGN KEY} stringenti, impedendo la presenza di opzioni orfane.
+    \item \textbf{Indici di Performance B-Tree:} L'indice \texttt{idx\_options\_building} su \path{intervention_options} accelera le query di aggregazione degli edifici, mentre gli indici \texttt{idx\_runs\_scenario} e \texttt{idx\_runs\_created} ottimizzano le interrogazioni temporali del registro di audit.
 \end{itemize}
 
 \subsection{Sequence Diagrams dei Flussi Chiave}
@@ -320,43 +361,62 @@ La Figura~\ref{fig:seq_opt} illustra le interazioni sincrone e asincrone che si 
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        scale=0.85, every node/.style={transform shape},
-        lifeline/.style={draw=black!50, dashed, thick},
-        actor/.style={draw=black!80, fill=tepoblue!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.6cm, minimum width=2.2cm},
+        scale=0.82, every node/.style={transform shape},
+        lifeline/.style={draw=black!45, dashed, thick},
+        actor/.style={draw=black!80, fill=tepoblue!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.7cm, minimum width=2.4cm},
         msg/.style={-Latex, thick, font=\tiny},
         retmsg/.style={-Latex, dashed, thick, font=\tiny}
     ]
         % Lifelines
-        \node[actor] (client) at (0,0) {Web Client\\(React SPA)};
-        \node[actor] (ctrl) at (3,0) {Scenario\\Controller};
-        \node[actor] (serv) at (6,0) {Optimization\\Service};
-        \node[actor] (solver) at (9,0) {OrToolsSolver\\(CP-SAT)};
-        \node[actor] (db) at (12,0) {PostgreSQL\\Database};
+        \node[actor] (client) at (0.5, 0) {Web Client\\(React SPA)};
+        \node[actor] (ctrl) at (3.8, 0) {Scenario\\Controller};
+        \node[actor] (serv) at (7.2, 0) {Optimization\\Service};
+        \node[actor] (solver) at (10.6, 0) {OrToolsSolver\\(CP-SAT)};
+        \node[actor] (db) at (14.2, 0) {PostgreSQL\\Database};
 
-        \draw[lifeline] (client) -- (0,-6.5);
-        \draw[lifeline] (ctrl) -- (3,-6.5);
-        \draw[lifeline] (serv) -- (6,-6.5);
-        \draw[lifeline] (solver) -- (9,-6.5);
-        \draw[lifeline] (db) -- (12,-6.5);
+        \draw[lifeline] (client) -- (0.5, -10.0);
+        \draw[lifeline] (ctrl) -- (3.8, -10.0);
+        \draw[lifeline] (serv) -- (7.2, -10.0);
+        \draw[lifeline] (solver) -- (10.6, -10.0);
+        \draw[lifeline] (db) -- (14.2, -10.0);
 
         % Messages
-        \draw[msg] (0,-0.8) -- node[above] {POST /api/scenarios/\{id\}/optimize} (3,-0.8);
-        \draw[msg] (3,-1.4) -- node[above] {optimize(scenarioId, budget, obj, ...)} (6,-1.4);
-        \draw[msg] (6,-2.0) -- node[above] {calcola SHA-256 canonico} (6,-2.3) -- (6.3,-2.3) -- (6.3,-2.0);
-        \draw[msg] (6,-2.7) -- node[above] {solve(OptimizationProblem)} (9,-2.7);
-        \node[draw=orange!80, fill=orange!10, rounded corners=2pt, font=\tiny, align=left] at (9,-3.6) {
+        \draw[msg] (0.5, -1.5) -- node[above=2pt, text width=3.2cm, align=center] {POST /api/scenarios/\\\{id\}/optimize} (3.8, -1.5);
+        \draw[msg] (3.8, -2.35) -- node[above=2pt, text width=3.2cm, align=center] {optimize(scenarioId,\\budget, obj, ...)} (7.2, -2.35);
+
+        % Self call: hash canonico
+        \draw[thick] (7.2, -3.05) -- ++(0.9, 0) -- ++(0, -0.6) -- ++(-0.9, 0);
+        \draw[-Latex, thick] (7.5, -3.65) -- (7.2, -3.65);
+        \node[right=3pt, font=\tiny, align=left] at (8.1, -3.35) {Calcolo SHA-256\\canonico problemHash};
+
+        % Chiamata solutore
+        \draw[msg] (7.2, -4.35) -- node[above=2pt, text width=3.2cm, align=center] {solve(OptimizationProblem)} (10.6, -4.35);
+
+        % Box esecuzione solutore (offset pulito tra solver e database)
+        \node[draw=orange!80, fill=orange!12, rounded corners=2pt, font=\tiny, align=left] at (12.4, -5.35) {
+            \textbf{Tie-Break a 4 Passi:}\\
             1. Maximize Obj\\
             2. Minimize Cost\\
             3. Minimize Count\\
             4. Lexicographic ID
         };
-        \draw[retmsg] (9,-4.5) -- node[above] {OptimizationResult (OPTIMAL)} (6,-4.5);
-        \draw[msg] (6,-5.0) -- node[above] {calcola spiegazioni barriere locali} (6,-5.3) -- (6.3,-5.3) -- (6.3,-5.0);
-        \draw[msg] (6,-5.7) -- node[above] {INSERT INTO optimization\_runs} (12,-5.7);
-        \draw[retmsg] (6,-6.0) -- node[above] {OptimizationResult DTO} (3,-6.0);
-        \draw[retmsg] (3,-6.3) -- node[above] {HTTP 200 OK (JSON Result)} (0,-6.3);
+
+        % Ritorno dal solutore
+        \draw[retmsg] (10.6, -6.35) -- node[above=2pt, text width=3.2cm, align=center] {OptimizationResult\\(OPTIMAL)} (7.2, -6.35);
+
+        % Self call: spiegazioni barriere
+        \draw[thick] (7.2, -7.05) -- ++(0.9, 0) -- ++(0, -0.6) -- ++(-0.9, 0);
+        \draw[-Latex, thick] (7.5, -7.65) -- (7.2, -7.65);
+        \node[right=3pt, font=\tiny, align=left] at (8.1, -7.35) {Calcolo spiegazioni\\barriere locali vincoli};
+
+        % Scrittura audit su database
+        \draw[msg] (7.2, -8.25) -- node[above=2pt, text width=6.6cm, align=center] {INSERT INTO optimization\_runs (Audit log)} (14.2, -8.25);
+
+        % Risposte a cascata
+        \draw[retmsg] (7.2, -8.95) -- node[above=2pt, text width=3.2cm, align=center] {OptimizationResult DTO} (3.8, -8.95);
+        \draw[retmsg] (3.8, -9.55) -- node[above=2pt, text width=3.2cm, align=center] {HTTP 200 OK (JSON Result)} (0.5, -9.55);
     \end{tikzpicture}
-    \caption{Sequence Diagram: esecuzione dell'ottimizzazione e audit trail.}
+    \caption{Sequence Diagram: esecuzione dell'ottimizzazione e audit trail deterministico.}
     \label{fig:seq_opt}
 \end{figure}
 
@@ -366,37 +426,48 @@ La Figura~\ref{fig:seq_ai} descrive il pattern \emph{Human-in-the-Loop}: l'opera
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        scale=0.85, every node/.style={transform shape},
-        lifeline/.style={draw=black!50, dashed, thick},
-        actor/.style={draw=black!80, fill=purple!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.6cm, minimum width=2.2cm},
+        scale=0.82, every node/.style={transform shape},
+        lifeline/.style={draw=black!45, dashed, thick},
+        actor/.style={draw=black!80, fill=purple!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.7cm, minimum width=2.4cm},
         msg/.style={-Latex, thick, font=\tiny},
         retmsg/.style={-Latex, dashed, thick, font=\tiny}
     ]
         % Lifelines
-        \node[actor] (user) at (0,0) {Operatore\\Tecnico};
-        \node[actor] (ui) at (3,0) {AiAssistant\\Panel (React)};
-        \node[actor] (ctrl) at (6,0) {AiController\\(Spring)};
-        \node[actor] (llm) at (9,0) {LlmAiAssistant\\(Provider REST)};
-        \node[actor] (rule) at (12,0) {RuleBasedAi\\Assistant};
+        \node[actor] (user) at (0.5, 0) {Operatore\\Tecnico};
+        \node[actor] (ui) at (3.8, 0) {AiAssistant\\Panel (React)};
+        \node[actor] (ctrl) at (7.2, 0) {AiController\\(Spring Boot)};
+        \node[actor] (llm) at (10.6, 0) {LlmAiAssistant\\(Provider REST)};
+        \node[actor] (rule) at (14.0, 0) {RuleBasedAi\\Assistant};
 
-        \draw[lifeline] (user) -- (0,-5.5);
-        \draw[lifeline] (ui) -- (3,-5.5);
-        \draw[lifeline] (ctrl) -- (6,-5.5);
-        \draw[lifeline] (llm) -- (9,-5.5);
-        \draw[lifeline] (rule) -- (12,-5.5);
+        \draw[lifeline] (user) -- (0.5, -9.5);
+        \draw[lifeline] (ui) -- (3.8, -9.5);
+        \draw[lifeline] (ctrl) -- (7.2, -9.5);
+        \draw[lifeline] (llm) -- (10.6, -9.5);
+        \draw[lifeline] (rule) -- (14.0, -9.5);
 
         % Messages
-        \draw[msg] (0,-0.8) -- node[above] {Inserisce prompt ("Budget 500k")} (3,-0.8);
-        \draw[msg] (3,-1.3) -- node[above] {POST /api/ai/propose-scenario} (6,-1.3);
-        \draw[msg] (6,-1.8) -- node[above] {proposeScenario(prompt)} (9,-1.8);
-        \node[font=\tiny, text=red] at (9,-2.4) {$\times$ Errore / Timeout / No Key};
-        \draw[msg] (6,-2.9) -- node[above] {Failover: proposeScenario(prompt)} (12,-2.9);
-        \draw[retmsg] (12,-3.5) -- node[above] {ScenarioProposal (fallback=true)} (6,-3.5);
-        \draw[retmsg] (6,-4.0) -- node[above] {HTTP 200 OK + Warning Fallback} (3,-4.0);
-        \draw[retmsg] (3,-4.6) -- node[above] {Mostra parametri proposti per revisione} (0,-4.6);
-        \draw[msg] (0,-5.2) -- node[above] {Conferma o modifica parametri} (3,-5.2);
+        \draw[msg] (0.5, -1.65) -- node[above=2pt, text width=3.2cm, align=center] {Inserimento prompt\\("Budget 500k, max CO2")} (3.8, -1.65);
+        \draw[msg] (3.8, -2.55) -- node[above=2pt, text width=3.2cm, align=center] {POST /api/ai/\\propose-scenario} (7.2, -2.55);
+        \draw[msg] (7.2, -3.45) -- node[above=2pt, text width=3.2cm, align=center] {proposeScenario\\(prompt)} (10.6, -3.45);
+
+        % Segnalazione errore LLM pulita (badge non sovrapposto)
+        \node[draw=red!70, fill=red!10, rounded corners=2pt, font=\tiny\bfseries, text=red!80] at (10.6, -4.15) {
+            $\times$ Timeout / HTTP Error / No API Key
+        };
+
+        % Attivazione failover locale
+        \draw[msg] (7.2, -4.85) -- node[above=2pt, text width=6.4cm, align=center] {Failover automatico: proposeScenario(prompt)} (14.0, -4.85);
+        \draw[retmsg] (14.0, -5.75) -- node[above=2pt, text width=6.4cm, align=center] {ScenarioProposal (fallback=true, rule-based)} (7.2, -5.75);
+        \draw[retmsg] (7.2, -6.55) -- node[above=2pt, text width=3.2cm, align=center] {HTTP 200 OK +\\Warning Fallback} (3.8, -6.55);
+        \draw[retmsg] (3.8, -7.35) -- node[above=2pt, text width=3.2cm, align=center] {Visualizza parametri\\proposti per revisione} (0.5, -7.35);
+        \draw[msg] (0.5, -8.15) -- node[above=2pt, text width=3.2cm, align=center] {Revisione umana:\\conferma parametri} (3.8, -8.15);
+
+        % Self call UI: applicazione parametri
+        \draw[thick] (3.8, -8.55) -- ++(0.8, 0) -- ++(0, -0.45) -- ++(-0.8, 0);
+        \draw[-Latex, thick] (4.1, -9.0) -- (3.8, -9.0);
+        \node[right=3pt, font=\tiny, align=left] at (4.6, -8.77) {Applica parametri allo\\ScenarioBuilder};
     \end{tikzpicture}
-    \caption{Sequence Diagram: proposta AI con fallback rule-based e conferma umana.}
+    \caption{Sequence Diagram: proposta parametri AI con fallback deterministico e revisione umana.}
     \label{fig:seq_ai}
 \end{figure}
 
@@ -406,34 +477,39 @@ La Figura~\ref{fig:seq_import} evidenzia il processo di ingestione atomica in du
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        scale=0.85, every node/.style={transform shape},
-        lifeline/.style={draw=black!50, dashed, thick},
-        actor/.style={draw=black!80, fill=tepogreen!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.6cm, minimum width=2.2cm},
+        scale=0.82, every node/.style={transform shape},
+        lifeline/.style={draw=black!45, dashed, thick},
+        actor/.style={draw=black!80, fill=tepogreen!15, rounded corners=2pt, font=\scriptsize\bfseries, align=center, minimum height=0.7cm, minimum width=2.4cm},
         msg/.style={-Latex, thick, font=\tiny},
         retmsg/.style={-Latex, dashed, thick, font=\tiny}
     ]
         % Lifelines
-        \node[actor] (user) at (0,0) {Operatore\\Tecnico};
-        \node[actor] (ui) at (3.5,0) {ImportPage\\Wizard (React)};
-        \node[actor] (ctrl) at (7,0) {ImportController\\(Spring)};
-        \node[actor] (db) at (10.5,0) {PostgreSQL\\Database};
+        \node[actor] (user) at (0.6, 0) {Operatore\\Tecnico};
+        \node[actor] (ui) at (5.0, 0) {ImportPage\\Wizard (React)};
+        \node[actor] (ctrl) at (9.6, 0) {ImportController\\(Spring Boot)};
+        \node[actor] (db) at (14.0, 0) {PostgreSQL\\Database};
 
-        \draw[lifeline] (user) -- (0,-5.2);
-        \draw[lifeline] (ui) -- (3.5,-5.2);
-        \draw[lifeline] (ctrl) -- (7,-5.2);
-        \draw[lifeline] (db) -- (10.5,-5.2);
+        \draw[lifeline] (user) -- (0.6, -9.5);
+        \draw[lifeline] (ui) -- (5.0, -9.5);
+        \draw[lifeline] (ctrl) -- (9.6, -9.5);
+        \draw[lifeline] (db) -- (14.0, -9.5);
 
         % Messages
-        \draw[msg] (0,-0.8) -- node[above] {Carica file CSV} (3.5,-0.8);
-        \draw[msg] (3.5,-1.3) -- node[above] {POST /api/import/validate (Multipart)} (7,-1.3);
-        \draw[msg] (7,-1.8) -- node[above] {Parsing \& Dry-run su memoria (no commit)} (7,-2.1) -- (7.3,-2.1) -- (7.3,-1.8);
-        \draw[retmsg] (7,-2.6) -- node[above] {ValidationReport (errori per riga, anteprima)} (3.5,-2.6);
-        \draw[retmsg] (3.5,-3.1) -- node[above] {Visualizza statistiche di pre-validazione} (0,-3.1);
-        \draw[msg] (0,-3.7) -- node[above] {Clicca "Conferma e Importa"} (3.5,-3.7);
-        \draw[msg] (3.5,-4.2) -- node[above] {POST /api/import/execute} (7,-4.2);
-        \draw[msg] (7,-4.6) -- node[above] {BEGIN TRANSACTION ... COMMIT} (10.5,-4.6);
-        \draw[retmsg] (7,-4.9) -- node[above] {HTTP 200 OK (Import completato)} (3.5,-4.9);
-        \draw[retmsg] (3.5,-5.1) -- node[above] {Notifica Toast successo} (0,-5.1);
+        \draw[msg] (0.6, -1.65) -- node[above=2pt, text width=4.2cm, align=center] {Carica file CSV\\(edifici / interventi)} (5.0, -1.65);
+        \draw[msg] (5.0, -2.55) -- node[above=2pt, text width=4.4cm, align=center] {POST /api/import/validate\\(Multipart)} (9.6, -2.55);
+
+        % Self call: dry-run
+        \draw[thick] (9.6, -3.15) -- ++(1.0, 0) -- ++(0, -0.6) -- ++(-1.0, 0);
+        \draw[-Latex, thick] (9.9, -3.75) -- (9.6, -3.75);
+        \node[right=3pt, font=\tiny, align=left] at (10.6, -3.45) {Parsing \& Dry-run in memoria\\Zero scritture su DB};
+
+        \draw[retmsg] (9.6, -4.45) -- node[above=2pt, text width=4.4cm, align=center] {ValidationReport\\(errori riga per riga, preview)} (5.0, -4.45);
+        \draw[retmsg] (5.0, -5.25) -- node[above=2pt, text width=4.2cm, align=center] {Visualizza statistiche\\e prospetto di validazione} (0.6, -5.25);
+        \draw[msg] (0.6, -6.05) -- node[above=2pt, text width=4.2cm, align=center] {Clicca "Conferma e Importa\\in Database"} (5.0, -6.05);
+        \draw[msg] (5.0, -6.85) -- node[above=2pt, text width=4.4cm, align=center] {POST /api/import/execute} (9.6, -6.85);
+        \draw[msg] (9.6, -7.65) -- node[above=2pt, text width=4.2cm, align=center] {BEGIN TRANSACTION\\$\to$ INSERT $\to$ COMMIT} (14.0, -7.65);
+        \draw[retmsg] (9.6, -8.45) -- node[above=2pt, text width=4.4cm, align=center] {HTTP 200 OK\\(Import completato)} (5.0, -8.45);
+        \draw[retmsg] (5.0, -9.05) -- node[above=2pt, text width=4.2cm, align=center] {Notifica Toast successo\\e aggiornamento viste} (0.6, -9.05);
     \end{tikzpicture}
     \caption{Sequence Diagram: procedura di importazione CSV in due fasi con validazione a secco.}
     \label{fig:seq_import}
