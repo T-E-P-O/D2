@@ -1,0 +1,343 @@
+\section{Specifiche delle Web API (RESTful \& OpenAPI 3.0)}
+\label{sec:specifiche_web_api}
+
+\subsection{Standard Architetturale REST e Convenzioni di Sistema}
+Le Web API di TEPO costituiscono il contratto formale di interscambio tra il client web Single Page Application e i servizi applicativi di backend. L'interfaccia è progettata in stretta conformità ai principi dell'architettura \textbf{REST} (\emph{Representational State Transfer}) e rispetta le linee guida dello standard \textbf{OpenAPI 3.0}, esponendo documentazione interattiva generata a runtime mediante Swagger UI all'indirizzo locale:
+\begin{center}
+    \url{http://localhost:8080/swagger-ui.html}
+\end{center}
+
+\subsubsection{Convenzioni sui Metodi HTTP e Risorse}
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+    \item \textbf{URI Semantici:} Le risorse sono identificate da sostantivi al plurale (es. \texttt{/api/buildings}, \texttt{/api/interventions}), con nidificazione logica per operazioni subordinate (es. \texttt{/api/scenarios/\{id\}/optimize}).
+    \item \textbf{Metodo \texttt{GET}:} Utilizzato esclusivamente per operazioni di lettura prive di effetti collaterali (idempotenti e sicure). Supporta parametri di query per filtri e paginazione.
+    \item \textbf{Metodo \texttt{POST}:} Utilizzato per l'innesco di computazioni complesse (ottimizzazioni, sweep di sensibilità, elaborazione prompt AI) e per l'ingestione di flussi di dati (validazione e commit CSV).
+\end{itemize}
+
+\subsubsection{Codici di Stato HTTP Utilizzati}
+Il sistema adotta i codici di stato standard del protocollo HTTP:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.15em]
+    \item \textbf{\texttt{200 OK}:} Richiesta elaborata con successo; payload JSON restituito nel corpo della risposta.
+    \item \textbf{\texttt{201 Created}:} Risorsa creata con successo (es. registrazione run di ottimizzazione o importazione completata).
+    \item \textbf{\texttt{400 Bad Request}:} Errore di validazione sintattica della richiesta o parametri non conformi allo schema.
+    \item \textbf{\texttt{404 Not Found}:} Identificativo risorsa inesistente (es. edificio o scenario non trovato).
+    \item \textbf{\texttt{422 Unprocessable Entity}:} Errore di validazione semantica di dominio (es. vincolo di incompatibilità circolare o file CSV con intestazioni incoerenti).
+    \item \textbf{\texttt{500 Internal Server Error}:} Anomalia imprevista intercettata e mascherata dal gestore eccezioni.
+\end{itemize}
+
+\subsubsection{Formato Uniforme degli Errori (\texttt{GlobalExceptionHandler})}
+Tutte le anomalie applicative vengono catturate centralmente dal componente \texttt{GlobalExceptionHandler}, che restituisce risposte uniformi conformi alla specifica RFC 7807 (\emph{Problem Details for HTTP APIs}):
+\begin{lstlisting}, caption={Struttura JSON standardizzata per la segnalazione degli errori.}]
+{
+  "timestamp": "2026-11-24T10:30:00.123Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Il budget allocato (0 centesimi) deve essere un valore strettamente positivo.",
+  "path": "/api/scenarios/sc-01/optimize"
+}
+\end{lstlisting}
+
+\subsection{Elenco Dettagliato degli Endpoint API}
+
+% -------------------------------------------------------------
+% SCENARI E OTTIMIZZAZIONE
+% -------------------------------------------------------------
+\subsubsection{Gestione Scenari e Risoluzione Ottima}
+
+\paragraph{1. Verifica dello Stato di Salute (\texttt{Ping})}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{GET /api/scenarios/ping}
+    \item \textbf{Descrizione:} Endpoint leggero per l'healthcheck continuo da parte di Docker Compose e della piattaforma Render.
+    \item \textbf{Risposta HTTP 200:}
+\begin{lstlisting}]
+{
+  "status": "ok"
+}
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{2. Risoluzione Ottima di uno Scenario (\texttt{Optimize})}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{POST /api/scenarios/\{id\}/optimize}
+    \item \textbf{Descrizione:} Innesca la risoluzione matematica esatta del portafoglio ottimo con Google OR-Tools CP-SAT, applicando il tie-break canonico a 4 passi e calcolando le spiegazioni deterministiche.
+    \item \textbf{Parametri Path:} \texttt{id} (String) --- Identificativo univoco dello scenario.
+    \item \textbf{Corpo della Richiesta (\texttt{OptimizeRequest}):}
+\begin{lstlisting}]
+{
+  "budgetCents": 50000000,
+  "objective": "ENERGY_SAVING_KWH",
+  "candidateOptionIds": [
+    "opt-bld-001-led", "opt-bld-001-hvac", "opt-bld-002-pv", "opt-bld-003-ins"
+  ],
+  "incompatibilities": [
+    ["opt-bld-001-led", "opt-bld-001-hvac"]
+  ],
+  "prerequisites": [
+    ["opt-bld-002-pv", "opt-bld-003-ins"]
+  ],
+  "maxNumber": 2,
+  "maxNumberOptionIds": ["opt-bld-001-led", "opt-bld-002-pv", "opt-bld-003-ins"]
+}
+\end{lstlisting}
+    \item \textbf{Risposta HTTP 200 (\texttt{OptimizationResult}):}
+\begin{lstlisting}]
+{
+  "runId": "run-f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "scenarioId": "scenario-scuole-centro",
+  "status": "OPTIMAL",
+  "optimalityProven": true,
+  "canonicalTieBreakCompleted": true,
+  "budgetCents": 50000000,
+  "totalInvestmentCents": 48500000,
+  "remainingBudgetCents": 1500000,
+  "objectiveValue": 128450,
+  "totalEnergySavingKwh": 128450.0,
+  "totalEconomicSavingEur": 34681.50,
+  "totalCo2ReductionKg": 44957.5,
+  "selectedOptionIds": ["opt-bld-002-pv", "opt-bld-003-ins"],
+  "excludedOptionIds": ["opt-bld-001-led", "opt-bld-001-hvac"],
+  "problemHash": "8f4a13b29c5e6d7a1e0b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f",
+  "explanations": [
+    {
+      "optionId": "opt-bld-002-pv",
+      "status": "SELECTED",
+      "reasonCode": "INCLUDED_OPTIMAL_CONTRIBUTION",
+      "description": "Selezionato nel portafoglio ottimo per massimo contributo all'obiettivo primario."
+    },
+    {
+      "optionId": "opt-bld-001-hvac",
+      "status": "EXCLUDED",
+      "reasonCode": "EXCLUDED_BUDGET_BARRIER",
+      "description": "Escluso per barriera locale di budget residuo (costo 25.000,00 EUR > residuo 15.000,00 EUR)."
+    }
+  ]
+}
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{3. Recupero Esecuzione da Audit Trail}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{GET /api/scenarios/runs/\{runId\}}
+    \item \textbf{Descrizione:} Estrae dal database relazionale lo storico certificato di una run di ottimizzazione con relativo hash canonico e prospetto motivazionale.
+    \item \textbf{Risposta HTTP 200:} Medesimo schema DTO dell'endpoint di ottimizzazione.
+\end{itemize}
+
+% -------------------------------------------------------------
+% SENSIBILITÀ
+% -------------------------------------------------------------
+\subsubsection{Analisi di Sensibilità Parametrica}
+
+\paragraph{1. Esecuzione Sweep di Sensibilità sul Budget}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{POST /api/sensitivity/sweep}
+    \item \textbf{Descrizione:} Esegue una sequenza di ottimizzazioni lungo una griglia uniforme di punti di budget (da 3 a 51 passi), restituendo la curva dei benefici e la classificazione di stabilità degli interventi.
+    \item \textbf{Corpo della Richiesta (\texttt{SensitivitySweepRequest}):}
+\begin{lstlisting}]
+{
+  "scenarioId": "scenario-sensibilita-01",
+  "objective": "ENERGY_SAVING_KWH",
+  "minBudgetCents": 20000000,
+  "maxBudgetCents": 80000000,
+  "steps": 5,
+  "candidateOptionIds": ["opt-01", "opt-02", "opt-03", "opt-04", "opt-05"],
+  "incompatibilities": [],
+  "prerequisites": []
+}
+\end{lstlisting}
+    \item \textbf{Risposta HTTP 200 (\texttt{SensitivitySweepResult}):}
+\begin{lstlisting}]
+{
+  "scenarioId": "scenario-sensibilita-01",
+  "points": [
+    {
+      "stepIndex": 0,
+      "budgetCents": 20000000,
+      "investmentCents": 19200000,
+      "objectiveValue": 45200,
+      "selectedCount": 2,
+      "selectedOptionIds": ["opt-01", "opt-04"]
+    },
+    {
+      "stepIndex": 4,
+      "budgetCents": 80000000,
+      "investmentCents": 76500000,
+      "objectiveValue": 189400,
+      "selectedCount": 5,
+      "selectedOptionIds": ["opt-01", "opt-02", "opt-03", "opt-04", "opt-05"]
+    }
+  ],
+  "stabilityReport": {
+    "alwaysSelected": ["opt-01"],
+    "neverSelected": [],
+    "oscillating": ["opt-02", "opt-03", "opt-04", "opt-05"]
+  }
+}
+\end{lstlisting}
+\end{itemize}
+
+% -------------------------------------------------------------
+% CATALOGHI EDIFICI E INTERVENTI
+% -------------------------------------------------------------
+\subsubsection{Cataloghi Patrimonio Edilizio e Interventi}
+
+\paragraph{1. Elenco Edifici Comunali}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{GET /api/buildings}
+    \item \textbf{Descrizione:} Restituisce la lista di tutti gli edifici con consumi nominali e provenienza del dato.
+    \item \textbf{Parametri Query (Opzionali):} \texttt{provenance} (String) --- Filtro per tipologia dato (\texttt{SYNTHETIC}, \texttt{OFFICIAL}, \texttt{MIXED}).
+    \item \textbf{Risposta HTTP 200 (Array di Building DTO):}
+\begin{lstlisting}]
+[
+  {
+    "id": "bld-001",
+    "name": "Scuola Primaria Raffaello Sanzio",
+    "address": "Via Grazioli 1, 38122 Trento (TN)",
+    "municipality": "Trento",
+    "latitude": 46.0682,
+    "longitude": 11.1275,
+    "buildingType": "Scuola",
+    "surfaceM2": 3450.0,
+    "annualEnergyConsumptionKwh": 245000.0,
+    "annualEnergyCostEur": 66150.0,
+    "annualCo2Kg": 85750.0,
+    "provenance": "SYNTHETIC"
+  }
+]
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{2. Elenco Opzioni di Intervento}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{GET /api/interventions}
+    \item \textbf{Descrizione:} Restituisce le opzioni tecnologiche di efficientamento per ciascun edificio.
+    \item \textbf{Risposta HTTP 200 (Array di InterventionOption DTO):}
+\begin{lstlisting}]
+[
+  {
+    "id": "opt-bld-001-pv",
+    "buildingId": "bld-001",
+    "interventionTypeId": "type-pv",
+    "name": "Impianto Fotovoltaico 50 kWp su Tetto",
+    "description": "Installazione moduli fotovoltaici su copertura piana con inverter di stringa.",
+    "investmentCostCents": 6500000,
+    "annualEnergySavingScaled": 58000,
+    "annualEconomicSavingCents": 1566000,
+    "annualCo2ReductionScaled": 20300,
+    "provenance": "SYNTHETIC",
+    "source": "Dataset Demo Comune di Trento",
+    "revision": 1
+  }
+]
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{3. Dati Cartografici per Leaflet}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{GET /api/map/buildings}
+    \item \textbf{Descrizione:} Endpoint compatto ottimizzato per il rendering dei marker e dei cluster geografici.
+    \item \textbf{Risposta HTTP 200:}
+\begin{lstlisting}]
+[
+  {
+    "id": "bld-001",
+    "name": "Scuola Primaria Raffaello Sanzio",
+    "latitude": 46.0682,
+    "longitude": 11.1275,
+    "interventionsCount": 3,
+    "totalPotentialSavingKwh": 82000.0
+  }
+]
+\end{lstlisting}
+\end{itemize}
+
+% -------------------------------------------------------------
+% IMPORTAZIONE DATI CSV
+% -------------------------------------------------------------
+\subsubsection{Ingestione e Validazione Dati CSV}
+
+\paragraph{1. Validazione Atomica a Secco (\texttt{Validate})}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{POST /api/import/validate}
+    \item \textbf{Content-Type:} \texttt{multipart/form-data}
+    \item \textbf{Descrizione:} Analizza il file CSV senza modificare il database. Verifica la conformità dei tipi di dato e l'integrità referenziale.
+    \item \textbf{Risposta HTTP 200 (\texttt{ValidationReport}):}
+\begin{lstlisting}]
+{
+  "valid": true,
+  "totalRows": 25,
+  "validRows": 25,
+  "errorRows": 0,
+  "errors": [],
+  "sampleRows": [
+    {
+      "rowNumber": 2,
+      "buildingId": "bld-012",
+      "name": "Sostituzione Vetrate Termiche",
+      "costEur": 42000.0
+    }
+  ]
+}
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{2. Esecuzione Transazionale dell'Importazione (\texttt{Execute})}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{POST /api/import/execute}
+    \item \textbf{Descrizione:} Salva atomicamente le righe validate all'interno di una transazione ACID.
+    \item \textbf{Risposta HTTP 200:} Riepilogo delle entità create e aggiornate.
+\end{itemize}
+
+\paragraph{3. Ripristino del Dataset Dimostrativo (\texttt{Reset-Demo})}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{POST /api/import/reset-demo}
+    \item \textbf{Descrizione:} Ripristina lo stato iniziale con i 100 edifici e 300 interventi sintetici di fabbrica.
+    \item \textbf{Risposta HTTP 200:} \texttt{\{"status": "reset\_completed"\}}.
+\end{itemize}
+
+% -------------------------------------------------------------
+% ASSISTENTE AI
+% -------------------------------------------------------------
+\subsubsection{Assistente Intelligente Sovrintendente}
+
+\paragraph{1. Proposta Parametri di Scenario}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{POST /api/ai/propose-scenario}
+    \item \textbf{Descrizione:} Elabora un prompt testuale dell'operatore tecnico e restituisce una proposta strutturata di parametri. Non effettua scritture di stato.
+    \item \textbf{Corpo della Richiesta:}
+\begin{lstlisting}]
+{
+  "prompt": "Voglio massimizzare il risparmio economico sulle scuole di Trento disponendo di 400.000 euro."
+}
+\end{lstlisting}
+    \item \textbf{Risposta HTTP 200 (\texttt{ScenarioProposal}):}
+\begin{lstlisting}]
+{
+  "interpretedObjective": "ECONOMIC_SAVING_EUR",
+  "suggestedBudgetCents": 40000000,
+  "candidateOptionIds": ["opt-bld-001-pv", "opt-bld-001-led", "opt-bld-004-hvac"],
+  "suggestedConstraints": [
+    {
+      "type": "CATEGORY_LIMIT",
+      "category": "Illuminazione LED",
+      "maxAllowed": 5
+    }
+  ],
+  "reasoning": "Identificati 400.000 EUR di budget e obiettivo di risparmio economico. Filtrati edifici scolastici.",
+  "fallbackUsed": false
+}
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{2. Stato del Servizio AI}
+\begin{itemize}[leftmargin=1.4em, itemsep=0.1em]
+    \item \textbf{Metodo e URI:} \texttt{GET /api/ai/status}
+    \item \textbf{Descrizione:} Notifica al client lo stato del modulo AI (se operante su LLM esterno o su motore deterministico locale).
+    \item \textbf{Risposta HTTP 200:}
+\begin{lstlisting}]
+{
+  "provider": "LOCAL_RULE_BASED",
+  "llmConfigured": false,
+  "fallbackAvailable": true
+}
+\end{lstlisting}
+\end{itemize}
