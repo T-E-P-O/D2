@@ -1,0 +1,77 @@
+\section{Tracciabilità dei Requisiti e Conclusioni}
+\label{sec:tracciabilita_conclusioni}
+
+\subsection{Matrice di Tracciabilità dei Requisiti (D1 vs D2)}
+A coronamento del processo di ingegneria del software orientato alle specifiche, la Tabella~\ref{tab:matrice_tracciabilita_finale} documenta la chiusura del cerchio di tracciabilità: ogni singolo Requisito Funzionale (RF) e Requisito Non Funzionale (RNF) stabilito nel documento D1 trova una precisa corrispondenza nella User Story di riferimento, nell'epica di sviluppo, nel modulo software implementato, nell'endpoint REST esposto e nella relativa suite di test automatizzati.
+
+\begin{longtable}{@{}p{1.2cm}p{1.2cm}p{1.2cm}p{3.2cm}p{3cm}p{2.8cm}p{1.2cm}@{}}
+\caption{Matrice di tracciabilità end-to-end tra requisiti di D1 e realizzazione in D2.} \label{tab:matrice_tracciabilita_finale} \\
+\toprule
+\textbf{RF/RNF} & \textbf{US} & \textbf{Epica} & \textbf{Modulo / Classe Java/TS} & \textbf{Endpoint REST} & \textbf{Suite di Test} & \textbf{Stato} \\
+\midrule
+\endfirsthead
+\multicolumn{7}{c}%
+{{\bfseries \tablename\ \thetable{} -- Continua dalla pagina precedente}} \\
+\toprule
+\textbf{RF/RNF} & \textbf{US} & \textbf{Epica} & \textbf{Modulo / Classe Java/TS} & \textbf{Endpoint REST} & \textbf{Suite di Test} & \textbf{Stato} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{{Continua nella pagina successiva...}} \\
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+
+RF-01 & US-01 & EP-01 & \texttt{BuildingController}, \texttt{BuildingsPage} & \texttt{GET /api/buildings} & \texttt{BuildingsPage.test} & 100\% \\
+RF-02 & US-02 & EP-01 & \texttt{InterventionController}, \texttt{InterventionsPage} & \texttt{GET /api/interventions} & \texttt{InterventionsPage.test} & 100\% \\
+RF-03 & US-03 & EP-02 & \texttt{ScenarioController}, \texttt{ScenarioBuilder} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ScenarioBuilder.test} & 100\% \\
+RF-04 & US-03 & EP-02 & \texttt{ScenarioConstraint}, \texttt{ScenarioBuilder} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ScenarioControllerTest} & 100\% \\
+RF-05 & US-04 & EP-03 & \texttt{OrToolsSolver}, \texttt{OptimizationService} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{OrToolsSolverTest} & 100\% \\
+RF-06 & US-05 & EP-03 & \texttt{ExplanationService}, \texttt{ResultPage} & \texttt{POST /api/scenarios/\{id\}/optimize} & \texttt{ExplanationReasonCodeTest} & 100\% \\
+RF-07 & US-14 & EP-03 & \texttt{ProblemHasher}, \texttt{AuditController} & \texttt{GET /api/scenarios/runs/\{id\}} & \texttt{SolverParityTest} & 100\% \\
+RF-08 & US-08 & EP-01 & \texttt{MapController}, \texttt{MapPage} (Leaflet) & \texttt{GET /api/map/buildings} & \texttt{MapPage.test} & 100\% \\
+RF-09 & US-06 & EP-04 & \texttt{scenarioStore.ts}, \texttt{ComparePage} & Client-side State & \texttt{ComparePage.test} & 100\% \\
+RF-10 & US-07 & EP-04 & \texttt{SensitivityService}, \texttt{SensitivityPage} & \texttt{POST /api/sensitivity/sweep} & \texttt{SensitivityServiceTest} & 100\% \\
+RF-11 & US-11,12 & EP-05 & \texttt{AiController}, \texttt{AiAssistantPanel} & \texttt{POST /api/ai/propose-scenario} & \texttt{LlmAiAssistantTest} & 100\% \\
+RF-12 & US-10 & EP-05 & \texttt{ImportController}, \texttt{ImportPage} & \texttt{POST /api/import/validate} & \texttt{ImportControllerTest} & 100\% \\
+\midrule
+RNF-01 & US-13 & TR-01 & Token CSS Civico, \texttt{ThemeToggle} & Client-side CSS & \texttt{shell.test.tsx} & 100\% \\
+RNF-02 & US-15 & TR-02 & Foglio Stampa CSS (\texttt{@media print}) & Client-side Print & \texttt{foundation.test.ts} & 100\% \\
+RNF-03 & US-04 & TR-03 & \texttt{OrToolsSolver} (Thread-Safe JNI) & \texttt{/api/scenarios/*/optimize} & \texttt{SolverRandomizedParityTest} & 100\% \\
+RNF-04 & US-14 & TR-04 & \texttt{OptimizationRunRepository} (PostgreSQL) & \texttt{/api/scenarios/runs/*} & \texttt{DatabaseUrlTest} & 100\% \\
+\bottomrule
+\end{longtable}
+
+\subsection{Analisi delle Variazioni e Raffinamenti Rispetto alla Baseline}
+Nel corso dello sviluppo incrementale, il confronto continuo con i vincoli tecnologici e con gli scenari d'uso reali ha portato all'introduzione di alcuni perfezionamenti ingegneristici rispetto alla bozza iniziale delineata nel D1:
+
+\paragraph{1. Adozione di Valori Interi a 64 bit (\texttt{long}) per gli Importi Finanziari}
+Mentre nei requisiti iniziali i valori economici erano stati genericamente modellati come valori in virgola mobile, l'analisi del solutore e dei requisiti contabili della Pubblica Amministrazione ha evidenziato il rischio inaccettabile di errori di troncamento. Tutti gli importi monetari sono stati rigorosamente convertiti e gestiti come centesimi di euro interi (\texttt{budgetCents}, \texttt{investmentCostCents}), eliminando qualsiasi deviazione numerica nel bilancio pubblico.
+
+\paragraph{2. Formalizzazione del Tie-Break Lessicografico a 4 Passi}
+La baseline di D1 postulava la risoluzione ottima del problema combinatorio; tuttavia, in problemi di knapsack reali possono esistere portafogli alternativi con identico valore della funzione obiettivo. Per scongiurare la non-riproducibilità matematica dell'output, nello Sprint 2 è stato progettato e implementato il protocollo canonico di spareggio in quattro passaggi deterministici, garantendo l'unicità e l'immutabilità della soluzione restituita.
+
+\paragraph{3. Confinamento Rigoroso del Sottosistema AI}
+In conformità alle direttive etiche e di sicurezza per l'impiego dell'AI nella PA, il modulo assistente è stato totalmente disaccoppiato dalla base di dati: l'AI agisce unicamente come traduttore sintattico da linguaggio naturale a parametri di scenario; non ha facoltà di scrittura, opera in modalità \emph{stateless} ed è sempre presidiata da un motore deterministico a regole locale pronto ad intervenire in caso di assenza di rete.
+
+\paragraph{4. Integrazione dei Diagrammi Architetturali (Fusione D3 in D2)}
+Come esplicitamente disposto dalle linee guida del corso per l'A.A. 2026/2027, i diagrammi dei componenti e delle classi non costituiscono più un deliverable isolato a sé stante (precedente D3), ma sono stati armonizzati all'interno del D2 per documentare in maniera sincrona l'evoluzione della progettazione a supporto dello sviluppo agile.
+
+\subsection{Conclusioni e Prospettive di Sviluppo Futuro}
+Il progetto \textbf{TEPO} ha dimostrato la piena fattibilità e l'elevata efficacia dell'applicazione dei principi dell'ingegneria del software e della programmazione matematica esatta a supporto dei processi decisionali della Pubblica Amministrazione.
+
+L'adozione dello \emph{Specification-Driven Development} ha consentito al team di:
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+    \item Mantenere un allineamento rigoroso tra i requisiti espressi dall'Amministrazione di Trento e il codice sorgente distribuito in cloud;
+    \item Garantire la massima qualità del software attraverso una copertura esaustiva di 119 test automatici per il backend e 69 test per il frontend, certificati ad ogni iterazione dalla pipeline di Continuous Integration;
+    \item Offrire una soluzione decisionale sobria, trasparente, accessibile e deterministica fondata sul principio cardine: \emph{``L'AI propone, l'utente confronta, il Comune decide''}.
+\end{itemize}
+
+\subsubsection{Evoluzioni Future}
+Quale ideale prosecuzione del percorso progettuale oltre l'ambito accademico, si individuano tre direttrici evolutive di primario interesse:
+\begin{enumerate}[leftmargin=1.4em, itemsep=0.2em]
+    \item \textbf{Ottimizzazione Multi-Periodo (Multi-Year Planning):} Estensione del modello matematico per supportare la pianificazione degli investimenti su più annualità di bilancio (es. programmazione triennale delle opere pubbliche), includendo tassi di sconto finanziari e scaglionamento dei cantieri.
+    \item \textbf{Frontiera di Pareto Multi-Obiettivo:} Introduzione di algoritmi di calcolo della frontiera delle soluzioni non dominate, consentendo al decisore di visualizzare simultaneamente i compromessi ottimi tra risparmio economico, energetico e riduzione di emissioni clima-alteranti.
+    \item \textbf{Integrazione con i Sistemi Informativi Comunali Reali:} Connessione sicura tramite protocolli interoperabili alle banche dati del Comune di Trento (catasto energetico provinciale, anagrafe tributaria e sistemi di contabilità), superando la fase di dataset sintetico per approdare a uno strumento operativo a regime nel governo del territorio.
+\end{enumerate}
