@@ -8,73 +8,71 @@ La Figura~\ref{fig:roadmap_sprint} riassume la traiettoria temporale e i deliver
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        scale=0.95,
-        node distance=0.6cm and 0.8cm,
-        sprintbox/.style={draw=tepoblue, fill=tepoblue!8, rounded corners=4pt, thick, minimum width=3.4cm, minimum height=3.6cm, align=left, font=\scriptsize},
-        titlebox/.style={fill=tepoblue!25, draw=tepoblue, rounded corners=2pt, font=\small\bfseries, align=center, minimum width=3.2cm, minimum height=0.6cm},
+        sprintbox/.style={
+            draw=tepoblue, fill=tepoblue!6, rounded corners=4pt, thick,
+            text width=6.7cm, minimum height=3.6cm, align=left, font=\scriptsize, inner sep=6pt
+        },
+        titlebox/.style={
+            fill=tepoblue!25, draw=tepoblue, rounded corners=2pt,
+            font=\small\bfseries, align=center, text width=6.4cm, minimum height=0.55cm
+        },
         arrow/.style={-Latex, very thick, draw=tepoblue!80}
     ]
-        % Sprint 1
+        % Row 1: Sprint 1 and Sprint 2
         \node[sprintbox] (s1) at (0,0) {
-            \\[0.5cm]
-            \textbf{Focus:} Dominio e Shell\\
-            $\bullet$ US-01: Catalogo Edifici\\
-            $\bullet$ US-02: Catalogo Interventi\\
-            $\bullet$ US-08: Mappa Leaflet\\
-            $\bullet$ US-09: Dashboard\\
-            \textbf{Incremento:} Schema V1,\\
-            Entity JPA, Shell React\\
-            \textbf{SP Completati:} 16
+            \\[0.35cm]
+            \textbf{Focus:} Dominio, Persistenza e Shell\\
+            $\bullet$ US-01: Catalogo Edifici Comunali\\
+            $\bullet$ US-02: Catalogo Interventi e Tipologie\\
+            $\bullet$ US-08: Cartografia Interattiva Leaflet\\
+            $\bullet$ US-09: Dashboard di Controllo e Navigazione\\[3pt]
+            \textbf{Incremento:} Schema Flyway V1, Entità JPA, Shell React\\
+            \textbf{Complessità:} 16 Story Points
         };
-        \node[titlebox] at (s1.north) {Sprint 1: Fondamenta};
+        \node[titlebox] at (s1.north) {Sprint 1: Fondamenta e Catalogo};
 
-        % Sprint 2
-        \node[sprintbox, right=0.7cm of s1] (s2) {
-            \\[0.5cm]
-            \textbf{Focus:} Ottimizzazione\\
-            $\bullet$ US-03: Scenario Builder\\
-            $\bullet$ US-04: Solver CP-SAT\\
-            $\bullet$ US-05: Spiegazioni\\
-            $\bullet$ US-14: Audit Trail \& Hash\\
-            \textbf{Incremento:} Core OR-Tools,\\
-            Schema V2, Result View\\
-            \textbf{SP Completati:} 34
+        \node[sprintbox] (s2) at (7.8cm, 0) {
+            \\[0.35cm]
+            \textbf{Focus:} Ottimizzazione Esatta e Spiegazioni\\
+            $\bullet$ US-03: Scenario Builder con Vincoli\\
+            $\bullet$ US-04: Risoluzione Ottima OR-Tools CP-SAT\\
+            $\bullet$ US-05: Motore Spiegazioni Deterministiche\\
+            $\bullet$ US-14: Audit Trail e Hash Canonico SHA-256\\[3pt]
+            \textbf{Incremento:} Schema V2, Core CP-SAT, Tie-Break a 4 Passi\\
+            \textbf{Complessità:} 34 Story Points
         };
-        \node[titlebox] at (s2.north) {Sprint 2: Algoritmo};
+        \node[titlebox] at (s2.north) {Sprint 2: Algoritmo e Solutore};
 
-        % Sprint 3
-        \node[sprintbox, right=0.7cm of s2] (s3) {
-            \\[0.5cm]
-            \textbf{Focus:} Analisi e Dati\\
-            $\bullet$ US-06: Confronto A/B\\
-            $\bullet$ US-07: Sensibilita Budget\\
-            $\bullet$ US-10: Import CSV Atomico\\
-            \textbf{Incremento:} Sensitivity\\
-            Engine, Compare View\\
-            \textbf{SP Completati:} 21
+        % Row 2: Sprint 3 and Sprint 4
+        \node[sprintbox] (s3) at (0, -4.6cm) {
+            \\[0.35cm]
+            \textbf{Focus:} Analisi Comparativa e Dati Esterni\\
+            $\bullet$ US-06: Confronto Scenari What-If (Slot A/B)\\
+            $\bullet$ US-07: Analisi di Sensibilità sul Budget (Sweep)\\
+            $\bullet$ US-10: Importazione Guidata CSV con Dry-Run\\[3pt]
+            \textbf{Incremento:} Sensitivity Engine, Compare View, Store Client\\
+            \textbf{Complessità:} 21 Story Points
         };
-        \node[titlebox] at (s3.north) {Sprint 3: What-If};
+        \node[titlebox] at (s3.north) {Sprint 3: What-If e Sensibilità};
 
-        % Sprint 4
-        \node[sprintbox, right=0.7cm of s3] (s4) {
-            \\[0.5cm]
-            \textbf{Focus:} AI e Rilascio\\
-            $\bullet$ US-11: Assistente AI\\
-            $\bullet$ US-12: Rule Fallback\\
-            $\bullet$ US-13: Accessibilita \& Temi\\
-            $\bullet$ US-15: Export Relazione\\
-            \textbf{Incremento:} AI Hybrid,\\
-            Docker \& Cloud Render\\
-            \textbf{SP Completati:} 16
+        \node[sprintbox] (s4) at (7.8cm, -4.6cm) {
+            \\[0.35cm]
+            \textbf{Focus:} Assistente AI e Rilascio in Esercizio\\
+            $\bullet$ US-11: Assistente AI Human-in-the-Loop\\
+            $\bullet$ US-12: Fallback Rule-Based Locale\\
+            $\bullet$ US-13: Accessibilità WCAG AA (Relazione / Sala)\\
+            $\bullet$ US-15: Esportazione Relazione e Stampa\\[3pt]
+            \textbf{Incremento:} AI Ibrida, Container Docker, Deploy Render\\
+            \textbf{Complessità:} 16 Story Points
         };
-        \node[titlebox] at (s4.north) {Sprint 4: Rilascio};
+        \node[titlebox] at (s4.north) {Sprint 4: AI e Deployment Cloud};
 
-        % Flow arrows
-        \draw[arrow] (s1) -- (s2);
-        \draw[arrow] (s2) -- (s3);
-        \draw[arrow] (s3) -- (s4);
+        % Flow arrows connecting the 4 sprints
+        \draw[arrow] (s1.east) -- (s2.west);
+        \draw[arrow] ([xshift=-2.6cm]s2.south) -- ++(0, -0.5cm) -| node[above, pos=0.3, font=\scriptsize\bfseries] {Incremento} ([xshift=1.2cm]s3.north);
+        \draw[arrow] (s3.east) -- (s4.west);
     \end{tikzpicture}
-    \caption{Roadmap dei quattro sprint di sviluppo di TEPO.}
+    \caption{Roadmap evolutiva dei quattro sprint di sviluppo di TEPO.}
     \label{fig:roadmap_sprint}
 \end{figure}
 
@@ -121,7 +119,7 @@ La Figura~\ref{fig:cmp_sprint1} illustra il diagramma dei componenti dello Sprin
         \end{scope}
 
         % Backend Box
-        \node[comp, below=1.2cm of ui_api] (ctrl) {BuildingController /\\InterventionController / MapController};
+        \node[comp, below=1.5cm of ui_api] (ctrl) {BuildingController /\\InterventionController / MapController};
         \node[comp, right=0.8cm of ctrl] (repos) {BuildingRepository /\\InterventionOptionRepository};
         \begin{scope}[on background layer]
             \node[box, fit=(ctrl) (repos), label=above:{\scriptsize\textbf{Backend Services (Spring Boot 3.3)}}] (box_be) {};
@@ -132,7 +130,7 @@ La Figura~\ref{fig:cmp_sprint1} illustra il diagramma dei componenti dello Sprin
 
         % Connectors
         \draw[arrow] (ui_views) -- (ui_api);
-        \draw[arrow] (ui_api) -- node[right, font=\tiny] {REST / JSON} (ctrl);
+        \draw[arrow] (ui_api) -- node[left, font=\tiny] {REST / JSON} (ctrl);
         \draw[arrow] (ctrl) -- (repos);
         \draw[arrow] (repos) -- node[right, font=\tiny] {JDBC / SQL} (db_node);
     \end{tikzpicture}
@@ -145,8 +143,12 @@ La struttura delle classi del modello di dominio introdotta nello Sprint 1 è de
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        node distance=0.8cm and 1cm,
-        classbox/.style={draw=black!80, fill=white, thick, rectangle split, rectangle split parts=3, rounded corners=2pt, align=left, font=\scriptsize, inner sep=4pt}
+        node distance=0.8cm and 2.6cm,
+        classbox/.style={
+            draw=black!80, fill=white, thick,
+            rectangle split, rectangle split parts=3,
+            rounded corners=2pt, align=left, font=\scriptsize, inner sep=4pt
+        }
     ]
         % Building
         \node[classbox] (building) {
@@ -168,7 +170,7 @@ La struttura delle classi del modello di dominio introdotta nello Sprint 1 è de
         };
 
         % InterventionOption
-        \node[classbox, right=1.2cm of building] (option) {
+        \node[classbox, right=2.6cm of building] (option) {
             \textbf{InterventionOption}
             \nodepart{second}
             - id: String\\
@@ -186,7 +188,7 @@ La struttura delle classi del modello di dominio introdotta nello Sprint 1 è de
         };
 
         % InterventionType
-        \node[classbox, below=1cm of option] (type) {
+        \node[classbox, below=1.2cm of option] (type) {
             \textbf{InterventionType}
             \nodepart{second}
             - id: String\\
@@ -198,9 +200,12 @@ La struttura delle classi del modello di dominio introdotta nello Sprint 1 è de
             + getName(): String
         };
 
-        % Connectors
-        \draw[-Latex, thick] (option.west) -- node[above, font=\tiny] {1..* appartiene a} (building.east);
-        \draw[-Latex, thick] (option.south) -- node[right, font=\tiny] {1..* tipologia} (type.north);
+        % Connectors with clear non-overlapping labels
+        \draw[-Latex, thick] (option.west) -- 
+            node[above=3pt, font=\scriptsize] {1..* appartiene a} 
+            node[below=3pt, font=\scriptsize] {1} (building.east);
+        \draw[-Latex, thick] (option.south) -- 
+            node[right=4pt, font=\scriptsize] {1..* tipologia 1} (type.north);
     \end{tikzpicture}
     \caption{Class Diagram del dominio introdotto nello Sprint 1.}
     \label{fig:class_sprint1}
@@ -254,41 +259,58 @@ La Figura~\ref{fig:cmp_sprint2} illustra l'integrazione del motore di ottimizzaz
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        node distance=0.8cm and 1cm,
-        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.2cm},
-        solvercomp/.style={draw=orange!80, fill=orange!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.4cm},
-        db/.style={cylinder, draw=black!80, fill=yellow!15, thick, shape border rotate=90, aspect=0.25, minimum width=2.4cm, minimum height=1.1cm, align=center, font=\scriptsize\bfseries},
-        box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=7pt},
+        node distance=0.8cm and 0.8cm,
+        comp/.style={
+            draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick,
+            align=center, font=\scriptsize\bfseries, minimum height=0.9cm, text width=3.3cm
+        },
+        solvercomp/.style={
+            draw=orange!80, fill=orange!15, rounded corners=3pt, thick,
+            align=center, font=\scriptsize\bfseries, minimum height=0.9cm, text width=3.4cm
+        },
+        db/.style={
+            draw=black!80, fill=yellow!15, rounded corners=4pt, thick,
+            align=center, font=\scriptsize\bfseries, minimum height=1.0cm, text width=5.0cm
+        },
+        box/.style={
+            draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=7pt
+        },
         arrow/.style={-Latex, thick, draw=black!80}
     ]
-        % Frontend
-        \node[comp] (views2) {ScenarioBuilder /\\ResultPage};
-        \node[comp, right=0.8cm of views2] (api2) {ApiClient};
+        % Frontend Tier
+        \node[comp] (views2) at (-2.4, 0) {ScenarioBuilder /\\ResultPage};
+        \node[comp] (api2) at (2.4, 0) {ApiClient\\(TypeScript)};
         \begin{scope}[on background layer]
             \node[box, fit=(views2) (api2), label=above:{\scriptsize\textbf{Frontend SPA}}] (b_fe2) {};
         \end{scope}
 
-        % Backend
-        \node[comp, below=1cm of views2] (ctrl2) {ScenarioController};
-        \node[comp, right=0.8cm of ctrl2] (serv2) {OptimizationService};
-        \node[comp, below=0.7cm of serv2] (hasher) {ProblemHasher};
-        \node[comp, left=0.7cm of hasher] (expl) {ExplanationService};
-        \node[solvercomp, below=0.7cm of hasher] (solver) {OrToolsSolver\\(C++ Engine via JNI)};
+        % Backend Controllers & Orchestration
+        \node[comp] (ctrl2) at (-2.6, -1.8) {ScenarioController\\(REST Endpoint)};
+        \node[comp] (serv2) at (2.6, -1.8) {OptimizationService\\(Orchestrator)};
+
+        % Solver and Analysis Sub-components in a balanced row (zero overlap)
+        \node[comp, text width=3.3cm] (hasher) at (-4.2, -3.7) {ProblemHasher\\(SHA-256)};
+        \node[solvercomp, text width=3.3cm] (solver) at (0, -3.7) {OrToolsSolver\\(C++ Engine JNI)};
+        \node[comp, text width=3.3cm] (expl) at (4.2, -3.7) {ExplanationService\\(Local Barriers)};
+
         \begin{scope}[on background layer]
-            \node[box, fit=(ctrl2) (serv2) (hasher) (expl) (solver), label=above:{\scriptsize\textbf{Backend Application \& Solver}}] (b_be2) {};
+            \node[box, fit=(ctrl2) (serv2) (hasher) (solver) (expl), label=above:{\scriptsize\textbf{Backend Application \& Optimization Tier}}] (b_be2) {};
         \end{scope}
 
-        % DB
-        \node[db, below=1cm of expl] (db2) {PostgreSQL 16\\(Flyway V1 + V2)};
+        % DB Tier centered below
+        \node[db] (db2) at (0, -5.6) {PostgreSQL 16\\(Flyway V1 + V2)};
 
-        % Connectors
+        % Connectors - Zero crossing
         \draw[arrow] (views2) -- (api2);
-        \draw[arrow] (api2) |- (ctrl2);
+        \draw[arrow] (api2.south) |- (ctrl2.east);
         \draw[arrow] (ctrl2) -- (serv2);
-        \draw[arrow] (serv2) -- (hasher);
-        \draw[arrow] (serv2) -- (solver);
-        \draw[arrow] (serv2) -- (expl);
-        \draw[arrow] (serv2) |- (db2);
+
+        \draw[arrow] (serv2.south) -| (hasher.north);
+        \draw[arrow] (serv2.south) -- (solver.north);
+        \draw[arrow] (serv2.south) -| (expl.north);
+
+        \draw[arrow] (solver.south) -- node[right, font=\tiny] {Audit Runs} (db2.north);
+        \draw[arrow] (ctrl2.west) -- node[above, font=\tiny] {Lettura Catalogo} ++(-2.4cm, 0) |- (db2.west);
     \end{tikzpicture}
     \caption{Component Diagram allo stato dello Sprint 2.}
     \label{fig:cmp_sprint2}
@@ -473,27 +495,49 @@ La Figura~\ref{fig:cmp_sprint4} illustra l'architettura integrata completata del
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        node distance=0.8cm and 1cm,
-        comp/.style={draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3cm},
-        aicomp/.style={draw=purple!80, fill=purple!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.2cm},
-        cloudcomp/.style={draw=tepogreen!80, fill=tepogreen!15, rounded corners=3pt, thick, align=center, font=\scriptsize\bfseries, minimum height=0.9cm, minimum width=3.4cm},
-        box/.style={draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=6pt},
+        node distance=0.8cm and 1.2cm,
+        comp/.style={
+            draw=black!80, fill=tepoblue!10, rounded corners=3pt, thick,
+            align=center, font=\scriptsize\bfseries, minimum height=0.9cm, text width=4.5cm
+        },
+        aicomp/.style={
+            draw=purple!80, fill=purple!15, rounded corners=3pt, thick,
+            align=center, font=\scriptsize\bfseries, minimum height=0.9cm, text width=4.5cm
+        },
+        cloudcomp/.style={
+            draw=tepogreen!80, fill=tepogreen!15, rounded corners=3pt, thick,
+            align=center, font=\scriptsize\bfseries, minimum height=0.9cm, text width=4.5cm
+        },
+        box/.style={
+            draw=tepoblue!60, fill=tepoblue!3, rounded corners=4pt, dashed, inner sep=6pt
+        },
         arrow/.style={-Latex, thick, draw=black!80}
     ]
-        % Frontend
-        \node[comp] (ui_s4) {React 18 SPA\\(AiAssistantPanel + Shell)};
-        \node[comp, right=0.8cm of ui_s4] (nginx_s4) {Nginx Reverse Proxy\\(Docker Web Service)};
+        % Frontend & Reverse Proxy
+        \node[comp, text width=4.8cm] (ui_s4) at (-3.4, 0) {React 18 SPA\\(AiAssistantPanel + Shell)};
+        \node[comp, text width=4.8cm] (nginx_s4) at (3.4, 0) {Nginx Reverse Proxy\\(Docker Web Service)};
 
         % Backend
-        \node[comp, below=1cm of ui_s4] (api_s4) {Spring Boot 3.3\\(REST Controllers)};
-        \node[aicomp, below=0.8cm of api_s4] (ai_engine) {AiAssistant Subsystem\\(LLM Client + Rule Fallback)};
-        \node[cloudcomp, right=0.8cm of api_s4] (cloud_s4) {Render PaaS Cloud\\(PostgreSQL + Auto Deploy)};
+        \node[comp, text width=8.8cm] (api_s4) at (0, -1.8) {
+            Spring Boot 3.3 Application Tier\\
+            \tiny REST Controllers $\cdot$ OptimizationService $\cdot$ DatabaseUrlPostProcessor
+        };
 
-        % Connectors
-        \draw[arrow] (ui_s4) -- (nginx_s4);
-        \draw[arrow] (nginx_s4) |- (api_s4);
-        \draw[arrow] (api_s4) -- (ai_engine);
-        \draw[arrow] (api_s4) -- (cloud_s4);
+        % Subsystems side-by-side below (Zero overlap)
+        \node[aicomp, text width=5.6cm] (ai_engine) at (-3.5, -3.8) {
+            AiAssistant Subsystem\\
+            \tiny LLM Client + Rule-Based Fallback Locale
+        };
+        \node[cloudcomp, text width=5.6cm] (cloud_s4) at (3.5, -3.8) {
+            Render PaaS Cloud Environment\\
+            \tiny Managed PostgreSQL 16 + Auto-Deploy Webhook
+        };
+
+        % Connectors - Clean orthogonal routing
+        \draw[arrow] (ui_s4) -- node[above, font=\tiny] {HTTPS} (nginx_s4);
+        \draw[arrow] (nginx_s4.south) -- node[right, font=\tiny] {Proxy pass (:8080)} ++(0, -0.6cm) -| (api_s4.north);
+        \draw[arrow] (api_s4.south) ++(-2.4cm, 0) -- ++(0, -0.5cm) -| (ai_engine.north);
+        \draw[arrow] (api_s4.south) ++(2.4cm, 0) -- ++(0, -0.5cm) -| (cloud_s4.north);
     \end{tikzpicture}
     \caption{Component Diagram integrato allo stato dello Sprint 4.}
     \label{fig:cmp_sprint4}

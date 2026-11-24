@@ -78,11 +78,11 @@ In ossequio al principio di trasparenza e tracciabilità richiesto dal corso, i 
 \end{center}
 Esempi reali tratti dalla cronologia di TEPO includono:
 \begin{itemize}[leftmargin=1.5em, itemsep=0.15em]
-    \item \texttt{feat(optimization): integrazione solver CP-SAT e tie-break lessicografico}
-    \item \texttt{feat(views): mappa georeferenziata degli edifici di Trento con Leaflet}
-    \item \texttt{test(solver): parita formale tra solver esatto e brute-force su 100 istanze}
-    \item \texttt{fix(map): dark filter su OpenStreetMap per visualizzazione senza watermark}
-    \item \texttt{chore(deploy): blueprint Infrastructure-as-Code per Render e dynamic port}
+    \item \texttt{feat(optimization):} integrazione solver CP-SAT e tie-break lessicografico;
+    \item \texttt{feat(views):} mappa georeferenziata degli edifici di Trento con Leaflet;
+    \item \texttt{test(solver):} parità formale tra solver esatto e brute-force su 100 istanze;
+    \item \texttt{fix(map):} dark filter su OpenStreetMap per visualizzazione pulita;
+    \item \texttt{chore(deploy):} blueprint Infrastructure-as-Code per Render e dynamic port.
 \end{itemize}
 
 \subsection{Pipeline di Continuous Integration e Continuous Deployment}
@@ -91,40 +91,63 @@ L'affidabilità del sistema è garantita da una pipeline di automazione configur
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        node distance=0.8cm and 1cm,
-        job/.style={draw=tepoblue, fill=tepoblue!10, rounded corners=3pt, thick, align=center, font=\small\bfseries, minimum height=1.1cm, minimum width=3.6cm},
-        stage/.style={draw=black!60, fill=white, rounded corners=2pt, font=\scriptsize, align=center, minimum height=0.6cm, minimum width=3.4cm},
+        scale=0.92, every node/.style={transform shape},
+        jobheader/.style={
+            draw=tepoblue!80, fill=tepoblue!15, rounded corners=3pt, thick,
+            align=center, font=\small\bfseries, text width=6.6cm, minimum height=0.8cm
+        },
+        stage/.style={
+            draw=black!60, fill=white, rounded corners=2pt,
+            font=\scriptsize, align=center, text width=6.6cm, minimum height=0.6cm
+        },
         arrow/.style={-Latex, thick, draw=black!80}
     ]
-        % Trigger
-        \node[draw=orange!80, fill=orange!10, rounded corners=3pt, font=\small\bfseries, minimum width=12.5cm, minimum height=0.8cm] (trigger) {
-            Trigger: Push o Pull Request sul ramo `main`
+        % Trigger Node
+        \node[draw=orange!80, fill=orange!10, rounded corners=3pt, font=\small\bfseries, align=center, text width=14.2cm, minimum height=0.75cm] (trigger) at (0, 0) {
+            Trigger GitHub Actions: Push o Pull Request sul ramo \texttt{main}
         };
 
-        % Job 1: Backend
-        \node[job, below left=0.8cm and 0.2cm of trigger.south] (backend_job) {Job 1: test-backend};
-        \node[stage, below=0.2cm of backend_job] (b_step1) {Checkout Repo \& Setup JDK 21};
-        \node[stage, below=0.2cm of b_step1] (b_step2) {Maven Dependencies Cache};
-        \node[stage, below=0.2cm of b_step2] (b_step3) {Esecuzione 119 Unit Test (\texttt{mvn test})};
+        % Left Column: Backend Job (Centered at x = -3.8)
+        \node[jobheader] (backend_job) at (-3.8, -1.25) {
+            Job 1: test-backend (Java 21 LTS)
+        };
+        \node[stage] (b1) at (-3.8, -2.15) {Checkout Repository \& Setup JDK 21 (Temurin)};
+        \node[stage] (b2) at (-3.8, -2.95) {Cache Dipendenze Maven (\texttt{\textasciitilde/.m2/repository})};
+        \node[stage] (b3) at (-3.8, -3.75) {Esecuzione 119 Test Unitari e Solver (\texttt{mvn test})};
 
-        % Job 2: Frontend
-        \node[job, below right=0.8cm and 0.2cm of trigger.south] (frontend_job) {Job 2: test-frontend};
-        \node[stage, below=0.2cm of frontend_job] (f_step1) {Checkout Repo \& Setup Node.js 24};
-        \node[stage, below=0.2cm of f_step1] (f_step2) {npm ci (Dipendenze lockate)};
-        \node[stage, below=0.2cm of f_step2] (f_step3) {Esecuzione 69 Test (\texttt{vitest})};
-        \node[stage, below=0.2cm of f_step3] (f_step4) {Build di Produzione (\texttt{vite build})};
+        % Right Column: Frontend Job (Centered at x = +3.8)
+        \node[jobheader, fill=cyan!15, draw=cyan!80] (frontend_job) at (3.8, -1.25) {
+            Job 2: test-frontend (Node.js 24)
+        };
+        \node[stage] (f1) at (3.8, -2.15) {Checkout Repository \& Setup Node.js 24};
+        \node[stage] (f2) at (3.8, -2.95) {Installazione Deterministica Dipendenze (\texttt{npm ci})};
+        \node[stage] (f3) at (3.8, -3.75) {Esecuzione 69 Test Unitari e Viste (\texttt{vitest})};
+        \node[stage] (f4) at (3.8, -4.55) {Compilazione Bundle Statico (\texttt{vite build})};
 
-        % Deploy Job
-        \node[job, fill=tepogreen!15, draw=tepogreen, below=4.2cm of trigger.south, minimum width=8cm] (deploy_job) {
-            Job 3: deploy (Trigger automatico Render)\\
-            \scriptsize Eseguito solo su push a `main` e previa riuscita dei test
+        % Bottom Node: Deploy Job
+        \node[draw=tepogreen!80, fill=tepogreen!15, rounded corners=3pt, thick, align=center, text width=14.2cm, minimum height=0.9cm] (deploy_job) at (0, -5.85) {
+            \textbf{Job 3: deploy (Trigger Webhook Render PaaS)}\\[1pt]
+            \scriptsize Eseguito automaticamente solo su push a \texttt{main} e previo successo di Job 1 e Job 2
         };
 
-        % Connectors
-        \draw[arrow] (trigger) -| (backend_job);
-        \draw[arrow] (trigger) -| (frontend_job);
-        \draw[arrow] (b_step3) |- (deploy_job);
-        \draw[arrow] (f_step4) |- (deploy_job);
+        % Arrows from Trigger to Jobs
+        \draw[arrow] (-3.8, -0.4) -- (backend_job.north);
+        \draw[arrow] (3.8, -0.4) -- (frontend_job.north);
+
+        % Arrows inside Backend Job
+        \draw[arrow] (backend_job) -- (b1);
+        \draw[arrow] (b1) -- (b2);
+        \draw[arrow] (b2) -- (b3);
+
+        % Arrows inside Frontend Job
+        \draw[arrow] (frontend_job) -- (f1);
+        \draw[arrow] (f1) -- (f2);
+        \draw[arrow] (f2) -- (f3);
+        \draw[arrow] (f3) -- (f4);
+
+        % Arrows to Deploy Job (Clean vertical alignment)
+        \draw[arrow] (b3.south) -- (-3.8, -5.35);
+        \draw[arrow] (f4.south) -- (3.8, -5.35);
     \end{tikzpicture}
     \caption{Architettura della pipeline di CI/CD di TEPO su GitHub Actions.}
     \label{fig:pipeline_ci}

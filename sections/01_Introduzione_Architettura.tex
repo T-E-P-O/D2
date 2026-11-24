@@ -44,56 +44,67 @@ L'architettura di TEPO è stata concepita secondo un modello stratificato a disa
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        scale=0.95,
-        node distance=0.9cm and 1.2cm,
-        layer/.style={draw=tepoblue!70, fill=tepoblue!5, rounded corners=4pt, very thick, inner sep=8pt},
-        component/.style={draw=black!70, fill=white, rounded corners=3pt, thick, align=center, font=\small\bfseries, minimum height=1cm},
-        database/.style={cylinder, draw=black!70, fill=white, thick, shape border rotate=90, aspect=0.25, minimum width=2.4cm, minimum height=1.2cm, align=center, font=\small\bfseries},
+        node distance=0.7cm and 0.5cm,
+        component/.style={
+            draw=tepoblue!80, fill=white, rounded corners=4pt, thick,
+            align=center, font=\small, inner sep=6pt, text width=14.6cm
+        },
+        subcomp/.style={
+            draw=black!70, rounded corners=3pt, thick,
+            align=center, font=\small, inner sep=5pt, text width=6.9cm
+        },
+        database/.style={
+            draw=black!70, fill=yellow!15, rounded corners=4pt, thick,
+            align=center, font=\small, inner sep=5pt, text width=14.5cm, minimum height=1.1cm
+        },
         edge/.style={-Latex, thick, draw=black!80}
     ]
         % Client Tier
-        \node[component, fill=cyan!10, minimum width=13cm] (client) {
-            \textbf{Presentation Tier: Client Web SPA}\\
-            \footnotesize React 18 $\cdot$ TypeScript $\cdot$ Vite $\cdot$ Tailwind/Token CSS Civico $\cdot$ Leaflet GIS $\cdot$ SVG Accessibili
+        \node[component, fill=cyan!10] (client) {
+            \textbf{Presentation Tier: Client Web SPA}\\[2pt]
+            \footnotesize React 18 $\cdot$ TypeScript 5.5 $\cdot$ Vite 5 $\cdot$ Token CSS Civico $\cdot$ Leaflet GIS $\cdot$ SVG Accessibili
         };
 
         % Reverse Proxy / Gateway
-        \node[component, fill=gray!15, minimum width=13cm, below=0.6cm of client] (proxy) {
-            \textbf{Web Server \& Routing Tier: Nginx Reverse Proxy / Spring SPA Forwarder}\\
-            \footnotesize Static Asset Serving $\cdot$ API Reverse Proxy $\cdot$ Gzip Compression $\cdot$ SPA HTML5 History Routing
+        \node[component, fill=gray!12, below=0.65cm of client] (proxy) {
+            \textbf{Web Server \& Routing Tier: Nginx Reverse Proxy / Spring SPA Forwarder}\\[2pt]
+            \footnotesize Serving Asset Statici $\cdot$ Reverse Proxy API $\cdot$ Compressione Gzip $\cdot$ SPA HTML5 History Routing
         };
 
         % Application Tier
-        \node[component, fill=green!10, minimum width=13cm, below=0.6cm of proxy] (backend) {
-            \textbf{Application Tier: Spring Boot 3.3.4 (Java 21 LTS)}\\
+        \node[component, fill=green!10, below=0.65cm of proxy] (backend) {
+            \textbf{Application Tier: Spring Boot 3.3.4 (Java 21 LTS)}\\[2pt]
             \footnotesize REST Controllers $\cdot$ Optimization Service $\cdot$ Sensitivity Engine $\cdot$ Explanation Engine $\cdot$ Problem Hasher
         };
 
-        % Native Optimizer Tier & AI Tier
-        \node[component, fill=orange!15, minimum width=6.2cm, below=0.6cm of backend.south west, anchor=north west] (solver) {
-            \textbf{Optimization Engine}\\
+        % Optimization Engine & AI Tier side-by-side
+        \node[subcomp, fill=orange!15, text width=6.8cm, below left=0.75cm and 0.4cm of backend.south] (solver) {
+            \textbf{Optimization Engine}\\[2pt]
             \footnotesize Google OR-Tools CP-SAT 9.11\\
             \scriptsize Native C++ Solver via JNI $\cdot$ MILP Branch-and-Cut
         };
 
-        \node[component, fill=purple!15, minimum width=6.2cm, below=0.6cm of backend.south east, anchor=north east] (ai) {
-            \textbf{AI Assistant Subsystem}\\
+        \node[subcomp, fill=purple!15, text width=6.8cm, below right=0.75cm and 0.4cm of backend.south] (ai) {
+            \textbf{AI Assistant Subsystem}\\[2pt]
             \footnotesize Hybrid Human-in-the-Loop\\
-            \scriptsize LLM Provider (REST) + Rule-Based Fallback
+            \scriptsize LLM Provider (REST) + Rule-Based Fallback Locale
         };
 
         % Persistence Tier
-        \node[database, fill=yellow!15, minimum width=13cm, below=0.6cm of solver.south west, anchor=north west] (db) {
-            \textbf{Persistence Tier: PostgreSQL 16 Relational Engine}\\
-            \footnotesize Schema Versionato con Flyway (V1, V2) $\cdot$ Integrità Referenziale Foreign Keys $\cdot$ Transazioni ACID
+        \node[database, below=0.75cm of $(solver.south)!0.5!(ai.south)$] (db) {
+            \textbf{Persistence Tier: PostgreSQL 16 Relational Engine}\\[2pt]
+            \footnotesize Schema Versionato con Flyway (V1, V2) $\cdot$ Integrità Referenziale FK $\cdot$ Transazioni ACID
         };
 
-        % Connectors
-        \draw[edge] (client) -- node[right, font=\scriptsize] {HTTPS / JSON REST} (proxy);
-        \draw[edge] (proxy) -- node[right, font=\scriptsize] {Internal HTTP Proxy (8080)} (backend);
-        \draw[edge] (backend.south -| solver.north) -- node[right, font=\scriptsize] {In-Process JNI} (solver.north);
-        \draw[edge] (backend.south -| ai.north) -- node[right, font=\scriptsize] {Structured Prompt / Heuristic} (ai.north);
-        \draw[edge] (backend.south -| db.north) -- node[right, font=\scriptsize] {JDBC / HikariCP Pool} (db.north);
+        % Connectors with clear non-overlapping labels
+        \draw[edge] (client) -- node[fill=white, inner sep=2pt, font=\scriptsize] {HTTPS / JSON REST} (proxy);
+        \draw[edge] (proxy) -- node[fill=white, inner sep=2pt, font=\scriptsize] {Internal HTTP Proxy (:8080)} (backend);
+
+        \draw[edge] (backend.south -| solver.north) -- node[left, font=\scriptsize, align=right] {In-Process JNI\ } (solver.north);
+        \draw[edge] (backend.south -| ai.north) -- node[right, font=\scriptsize, align=left] {\ Structured JSON} (ai.north);
+
+        \draw[edge] (solver.south) -- node[left, font=\scriptsize] {Audit Runs\ } (solver.south |- db.north);
+        \draw[edge] (backend.south) -- node[fill=white, inner sep=2pt, font=\scriptsize, align=center] {JDBC Pool\\HikariCP} (db.north);
     \end{tikzpicture}
     \caption{Architettura a livelli logici e stack tecnologico di TEPO.}
     \label{fig:architettura_livelli}
@@ -104,7 +115,7 @@ La Tabella~\ref{tab:stack_tecnologico} riassume la configurazione analitica dei 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{@{}p{3.2cm}p{4cm}p{8.5cm}@{}}
+\begin{tabularx}{\textwidth}{@{} >{\RaggedRight\arraybackslash\bfseries}p{2.6cm} >{\RaggedRight\arraybackslash}p{3.8cm} >{\RaggedRight\arraybackslash}X @{}}
 \toprule
 \textbf{Ambito} & \textbf{Tecnologia Selezionata} & \textbf{Motivazione e Ruolo Architetturale} \\
 \midrule
@@ -112,15 +123,15 @@ La Tabella~\ref{tab:stack_tecnologico} riassume la configurazione analitica dei 
 \textbf{Framework Backend} & Spring Boot 3.3.4 & Inversion of Control, configurazione modulare, validazione dichiarativa dei DTO, integrazione nativa con OpenAPI/Swagger. \\
 \textbf{Solver Matematico} & Google OR-Tools CP-SAT 9.11 & Risoluzione esatta di problemi di Constraint Programming e Integer Programming; supporto nativo a vincoli logici booleani con implicazione; performance ottimali garantite dal core C++ compilato e interfacciato tramite Java Native Interface (JNI). \\
 \textbf{Database Relazionale} & PostgreSQL 16 & Motore open source robusto, supporto per indici B-Tree avanzati, gestione delle chiavi esterne per garantire l'integrità referenziale, transazioni serializzabili. \\
-\textbf{Database Migration} & Flyway 10 & Versionamento deterministico dello schema relazionale (`V1\_\_init.sql`, `V2\_\_optimization\_runs.sql`); allineamento automatico tra ambienti di test, locale e cloud. \\
+\textbf{Database Migration} & Flyway 10 & Versionamento deterministico dello schema relazionale (\path{V1__init.sql}, \allowbreak\path{V2__optimization_runs.sql}); allineamento automatico tra ambienti di test, locale e cloud. \\
 \textbf{Linguaggio Frontend} & TypeScript 5.5 & Tipizzazione statica end-to-end allineata ai contratti DTO del backend, prevenzione di errori di runtime e manutenibilità. \\
 \textbf{Libreria UI Frontend} & React 18 & Modello a componenti dichiarativo, gestione dello stato reattivo e concorrente, facilità di composizione delle viste decisionali. \\
 \textbf{Tooling \& Bundler} & Vite 5 & Server di sviluppo ultra-rapido (ESM nativo), ottimizzazione del bundle di produzione, integrazione nativa con suite Vitest. \\
 \textbf{Cartografia \& GIS} & Leaflet 1.9 & Rendering di mappe interattive georeferenziate, clustering degli edifici di Trento, visualizzazione ad alto contrasto con supporto dark mode senza dipendenze proprietarie. \\
 \textbf{Containerizzazione} & Docker \& Docker Compose & Multi-stage build per la minimizzazione delle immagini, isolamento completo delle dipendenze, parità garantita tra sviluppo locale e cloud. \\
-\textbf{Piattaforma Cloud} & Render (PaaS) & Hosting nativo di container Docker, gestione integrata di istanze PostgreSQL con TLS, Infrastructure-as-Code via `render.yaml`. \\
+\textbf{Piattaforma Cloud} & Render (PaaS) & Hosting nativo di container Docker, gestione integrata di istanze PostgreSQL con TLS, Infrastructure-as-Code via \texttt{render.yaml}. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \caption{Quadro di sintesi dello stack tecnologico di TEPO.}
 \label{tab:stack_tecnologico}
 \end{table}
