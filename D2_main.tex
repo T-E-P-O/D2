@@ -14,6 +14,7 @@
 \usepackage{subcaption}
 \usepackage{titlesec}
 \usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
 \usepackage{hyphenat}
 \usepackage{tocloft}
 \usepackage{xcolor}
@@ -26,6 +27,8 @@
 \usepackage{pdflscape}
 \usepackage{fancyhdr}
 \usepackage{refcount}
+\usepackage{tikz}
+\usetikzlibrary{shapes,shapes.geometric,arrows.meta,positioning,fit,backgrounds,calc,trees,decorations.pathreplacing}
 
 % Colonna di tabella allineata a sinistra, senza giustificazione forzata.
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
@@ -34,36 +37,21 @@
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codegreen}{rgb}{0.1,0.5,0.1}
 \definecolor{codeblue}{rgb}{0.1,0.1,0.6}
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
 \lstset{
-  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\footnotesize,
   keywordstyle=\color{codeblue}\bfseries,
   commentstyle=\color{codegreen}\itshape,
   stringstyle=\color{codegray},
   frame=single,
+  rulecolor=\color{black!20},
   breaklines=true,
   showstringspaces=false,
   captionpos=b,
   columns=fullflexible,
   keepspaces=true
 }
-
-% --- CONTATORI E COMANDI PER REQUISITI, USER STORY E USER FLOW ---
-\makeatletter
-
-% Livelli personalizzati per l'indice
-\def\toclevel@RF{2}
-\def\toclevel@subRF{3}
-\def\toclevel@RNF{2}
-\def\toclevel@subRNF{3}
-\def\toclevel@US{2}
-\def\toclevel@UF{2}
-
-\newcommand{\l@RF}[2]{\begingroup\small\@dottedtocline{2}{1.5em}{2.3em}{#1}{#2}\endgroup}
-\newcommand{\l@subRF}[2]{\begingroup\small\@dottedtocline{3}{3.8em}{3.4em}{#1}{#2}\endgroup}
-\newcommand{\l@RNF}[2]{\begingroup\small\@dottedtocline{2}{1.5em}{2.3em}{#1}{#2}\endgroup}
-\newcommand{\l@subRNF}[2]{\begingroup\small\@dottedtocline{3}{3.8em}{3.4em}{#1}{#2}\endgroup}
-\newcommand{\l@US}[2]{\begingroup\small\@dottedtocline{2}{1.5em}{2.3em}{#1}{#2}\endgroup}
-\newcommand{\l@UF}[2]{\begingroup\small\@dottedtocline{2}{1.5em}{2.3em}{#1}{#2}\endgroup}
 
 % --- Formato delle sezioni ---
 \titleformat{\section}
@@ -72,70 +60,20 @@
   {6pt}
   {}
 
-% --- Requisiti funzionali (RF) ---
-\newcounter{reqfunc}
-\newcounter{subRFcounter}[reqfunc]
-\renewcommand{\thesubRFcounter}{\arabic{reqfunc}.\arabic{subRFcounter}}
+\titleformat{\subsection}
+  {\normalfont\Large\bfseries}
+  {\thesubsection}
+  {6pt}
+  {}
+
+\titleformat{\subsubsection}
+  {\normalfont\large\bfseries}
+  {\thesubsubsection}
+  {6pt}
+  {}
 
 % Numero a due cifre (RF-01, RNF-01, US-01, UF-01)
 \newcommand{\twodigits}[1]{\ifnum#1<10 0\fi\number#1}
-
-\newcommand{\RF}[1]{%
-  \refstepcounter{reqfunc}%
-  \setcounter{subRFcounter}{0}%
-  \addcontentsline{toc}{RF}{RF-\twodigits{\arabic{reqfunc}}: #1}%
-  \paragraph*{RF-\twodigits{\arabic{reqfunc}}: #1}%
-}
-
-\newcommand{\subRF}[1]{%
-  \refstepcounter{subRFcounter}%
-  \addcontentsline{toc}{subRF}{RF \thesubRFcounter: #1}%
-  \noindent\hspace{1.5em}\textbf{RF \thesubRFcounter:} #1\par
-}
-
-% --- Requisiti non funzionali (RNF) ---
-\newcounter{reqnonfunc}
-\newcounter{subRNFcounter}[reqnonfunc]
-\renewcommand{\thesubRNFcounter}{\arabic{reqnonfunc}.\arabic{subRNFcounter}}
-
-\newcommand{\RNF}[1]{%
-  \refstepcounter{reqnonfunc}%
-  \setcounter{subRNFcounter}{0}%
-  \addcontentsline{toc}{RNF}{RNF-\twodigits{\arabic{reqnonfunc}}: #1}%
-  \paragraph*{RNF-\twodigits{\arabic{reqnonfunc}}: #1}%
-}
-
-\newcommand{\subRNF}[1]{%
-  \refstepcounter{subRNFcounter}%
-  \addcontentsline{toc}{subRNF}{RNF \thesubRNFcounter: #1}%
-  \noindent\hspace{1.5em}\textbf{RNF \thesubRNFcounter:} #1\par
-}
-
-% --- User story (US) ---
-\newcounter{userStories}
-
-\newcommand{\US}[1]{%
-  \refstepcounter{userStories}%
-  \addcontentsline{toc}{US}{US-\twodigits{\arabic{userStories}}: #1}%
-  \subsection*{US-\twodigits{\arabic{userStories}} --- #1}%
-}
-
-% --- User flow (UF) ---
-\newcounter{userFlows}
-
-\newcommand{\UF}[1]{%
-  \refstepcounter{userFlows}%
-  \addcontentsline{toc}{UF}{UF-\twodigits{\arabic{userFlows}}: #1}%
-  \subsection*{UF-\twodigits{\arabic{userFlows}} --- #1}%
-}
-
-\makeatother
-
-% Riferimenti nel formato stabile RF-01, RNF-01, US-01, UF-01.
-\newcommand{\RFref}[1]{RF-\twodigits{\getrefnumber{#1}}}
-\newcommand{\RNFref}[1]{RNF-\twodigits{\getrefnumber{#1}}}
-\newcommand{\USref}[1]{US-\twodigits{\getrefnumber{#1}}}
-\newcommand{\UFref}[1]{UF-\twodigits{\getrefnumber{#1}}}
 
 \newcommand{\myfootertext}{}
 \newcommand{\myicon}{logo_unitn_chiaro.png}
@@ -144,17 +82,21 @@
 \definecolor{lightergray}{gray}{0.35}
 \definecolor{tocsec}{gray}{0.35}
 \definecolor{tocsubsec}{gray}{0.45}
+\definecolor{tepoblue}{RGB}{0,102,204}
+\definecolor{tepogreen}{RGB}{46,139,87}
+\definecolor{tepocyan}{RGB}{0,168,204}
 \pagecolor{white}
 \color{black}
 
 \hypersetup{
     colorlinks=true,
     linkcolor=lightergray,
+    citecolor=tepoblue,
     urlcolor=cyan,
-    pdftitle={TEPO --- D2},
+    pdftitle={TEPO --- D2: Documento di Sviluppo e Architettura},
     pdfauthor={Gruppo T14},
-    pdfsubject={Documento di Requirements Engineering --- baseline},
-    pdfkeywords={TEPO, requisiti, use case, user story, energy portfolio optimization}
+    pdfsubject={Documento di Sviluppo, Architettura Software, Specifiche API e Deployment},
+    pdfkeywords={TEPO, Sviluppo, Architettura, Sprint, Component Diagram, Class Diagram, Web API, Docker, Render}
 }
 
 \renewcommand{\cftsecfont}{\color{tocsec}\bfseries}
@@ -170,7 +112,7 @@
 % --- Intestazione e piè di pagina ---
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\color{tocsubsec}TEPO --- D1}
+\fancyhead[L]{\small\color{tocsubsec}TEPO --- D2}
 \fancyhead[R]{\small\color{tocsubsec}Gruppo T14}
 \fancyfoot[C]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -205,20 +147,24 @@
         \vspace{0.3cm}
         {\Large\itshape Trento Energy Portfolio Optimizer \par}
         \vspace{0.35cm}
-        {\large Documento di Requirements Engineering --- baseline \par}
+        {\large Documento di Sviluppo e Architettura del Sistema \par}
         \vspace{0.5cm}
         {\color{cyan}\rule{\textwidth}{2pt}}
     \end{flushleft}
 
     \vspace{0.7cm}
 
-    % --- Document Info (come da template D1) ---
+    % --- Document Info (allineato alle linee guida di corso) ---
     \begin{flushleft}
         {\small
         \renewcommand{\arraystretch}{1.25}
-        \begin{tabular}{@{}p{3.1cm}p{11.7cm}@{}}
-            \textbf{Doc. Name} & TEPO --- D2, Descrizione di Progetto \\
-            \textbf{Description} & Documento di Requirements Engineering: progetto, requisiti funzionali e non funzionali, use case, user story, acceptance criteria, mockup e traceability. \\
+        \begin{tabular}{@{}p{3.2cm}p{11.6cm}@{}}
+            \textbf{Doc. Name} & TEPO --- D2, Sviluppo e Architettura di Progetto \\
+            \textbf{Doc. Number} & D2 V1.0 \\
+            \textbf{Description} & Documentazione del processo di sviluppo in sprint, epiche e product backlog, evoluzione architetturale progressiva (diagrammi dei componenti e delle classi), specifiche formali Web API REST/OpenAPI 3.0 e configurazione del deployment in cloud. \\
+            \textbf{Codice Sorgente} & \url{https://github.com/T-E-P-O/TEPO} \\
+            \textbf{Deliverable D1} & \url{https://github.com/T-E-P-O/D1} \\
+            \textbf{Demo Online} & \url{https://tepo.onrender.com} \\
         \end{tabular}}
     \end{flushleft}
 
@@ -256,14 +202,14 @@
 
 \newpage
 
-\include{sections/Il_nostro_progetto}
-\include{sections/RF}
-\include{sections/RNF}
-\include{sections/UD}
-\include{sections/US}
-\include{sections/DesignFrontEnd}
-\include{sections/UF}
-\include{sections/Traceability}
-\include{sections/GestioneModifiche}
+\include{sections/01_Introduzione_Architettura}
+\include{sections/02_Repository_Pipeline}
+\include{sections/03_Epiche_ProductBacklog}
+\include{sections/04_Processo_Sviluppo_Sprint}
+\include{sections/05_Architettura_Diagrammi_Finali}
+\include{sections/06_Specifiche_Web_API}
+\include{sections/07_Frontend_UX}
+\include{sections/08_Deployment_Esercizio}
+\include{sections/09_Tracciabilita_Conclusioni}
 
 \end{document}
